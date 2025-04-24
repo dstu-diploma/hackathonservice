@@ -20,7 +20,12 @@ router = APIRouter(
 )
 
 
-@router.post("/hackathon", response_model=HackathonDto)
+@router.post(
+    "/hackathon",
+    response_model=HackathonDto,
+    summary="Создание хакатона",
+    description="Регистрирует новый хакатон. Имя хакатона должно быть уникальным.",
+)
 async def create_hackathon(
     data: CreateHackathonDto,
     hackathon_controller: HackathonController = Depends(
@@ -32,7 +37,11 @@ async def create_hackathon(
     )
 
 
-@router.delete("/hackathon/{id}")
+@router.delete(
+    "/hackathon/{id}",
+    summary="Удаление хакатона",
+    description="Полностью удаляет данные о хакатоне",
+)
 async def delete_hackathon(
     id: int,
     hackathon_controller: HackathonController = Depends(
@@ -42,7 +51,12 @@ async def delete_hackathon(
     return await hackathon_controller.delete(id)
 
 
-@router.patch("/hackathon/{id}", response_model=HackathonDto)
+@router.patch(
+    "/hackathon/{id}",
+    response_model=HackathonDto,
+    summary="Обновление информации о хакатоне",
+    description="Позволяет обновить одно или несколько полей о хакатоне. Все поля необязательные.",
+)
 async def update_hackathon_data(
     id: int,
     dto: OptionalHackathonDto,
@@ -53,7 +67,12 @@ async def update_hackathon_data(
     return await hackathon_controller.update(id, dto)
 
 
-@router.post("/hackathon/{id}/teams", response_model=HackathonTeamDto)
+@router.post(
+    "/hackathon/{id}/teams",
+    response_model=HackathonTeamDto,
+    summary="Добавление команды-участника",
+    description="Позволяет зарегистрировать команду как участника данного хакатона. Проводится проверка на существование команды (обращение в TeamService)",
+)
 async def add_team(
     id: int,
     dto: TeamIdDto,
@@ -64,7 +83,11 @@ async def add_team(
     return await hackathon_teams_controller.add(id, dto.team_id)
 
 
-@router.delete("/hackathon/{id}/teams")
+@router.delete(
+    "/hackathon/{id}/teams",
+    summary="Удаление команды-участника",
+    description="Позволяет убрать команду как участника хакатона.",
+)
 async def delete_team(
     id: int,
     dto: TeamIdDto,
