@@ -1,11 +1,17 @@
 from app.controllers.hackathon import HackathonController, IHackathonController
 from app.controllers.hackathon.exceptions import NoSuchHackathonException
+from app.controllers.team import (
+    TeamController,
+    get_team_controller,
+    ITeamController,
+)
 from app.models.hackathon import HackathonTeamsModel
 from .dto import HackathonTeamDto
 from typing import Protocol
 from fastapi import Depends
 
 from .exceptions import (
+    NoSuchTeamException,
     TeamAlreadyParticipatingException,
     TeamIsNotParticipatingException,
 )
@@ -13,6 +19,7 @@ from .exceptions import (
 
 class IHackathonTeamsController(Protocol):
     hackathon_controller: IHackathonController
+    team_controller: ITeamController
 
     async def get_by_hackathon(
         self, hackathon_id: int
@@ -28,8 +35,13 @@ class IHackathonTeamsController(Protocol):
 
 
 class HackathonTeamsController(IHackathonTeamsController):
-    def __init__(self, hackathon_controller: IHackathonController):
+    def __init__(
+        self,
+        hackathon_controller: IHackathonController,
+        team_controller: ITeamController,
+    ):
         self.hackathon_controller = hackathon_controller
+        self.team_controller = team_controller
 
     async def get_by_hackathon(
         self, hackathon_id: int
@@ -61,6 +73,9 @@ class HackathonTeamsController(IHackathonTeamsController):
         if not await self.hackathon_controller.get(hackathon_id):
             raise NoSuchHackathonException()
 
+        if not await self.team_controller.get_team_exists(team_id):
+            raise NoSuchTeamException()
+
         if participant_data:
             raise TeamAlreadyParticipatingException()
 
@@ -82,5 +97,6 @@ class HackathonTeamsController(IHackathonTeamsController):
 
 def get_hackathon_teams_controller(
     hack_controller: HackathonController = Depends(),
+    team_controller: TeamController = Depends(get_team_controller),
 ) -> HackathonTeamsController:
-    return HackathonTeamsController(hack_controller)
+    return HackathonTeamsController(hack_controller, team_controller)
