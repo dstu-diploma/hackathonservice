@@ -21,7 +21,8 @@ class HackathonTeamsModel(Model):
             on_delete=fields.CASCADE,
         )
     )
-    team_id = fields.IntField(unique=True)
+    team_id = fields.IntField()
 
     class Meta:
         table: str = "hackathon_teams"
+        unique_together = (("hackathon", "team_id"),)
