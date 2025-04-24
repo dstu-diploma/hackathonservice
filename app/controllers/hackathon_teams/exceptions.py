@@ -5,7 +5,7 @@ class TeamAlreadyParticipatingException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=400,
-            detail="The team is already participating in this hackathon!",
+            detail="Данная команда уже участвует в этом хакатоне!",
         )
 
 
@@ -13,5 +13,5 @@ class TeamIsNotParticipatingException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=400,
-            detail="The team is not participating in this hackathon!",
+            detail="Данная команда не является участником этого хакатона!",
         )
