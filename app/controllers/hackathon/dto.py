@@ -19,3 +19,10 @@ class HackathonDto(BaseModel):
             start_date=hackathon.start_date,
             end_date=hackathon.end_date,
         )
+
+
+class OptionalHackathonDto(BaseModel):
+    name: str | None = None
+
+    start_date: datetime | None = None
+    end_date: datetime | None = None
