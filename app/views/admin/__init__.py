@@ -11,7 +11,7 @@ from app.controllers.hackathon_teams import (
     get_hackathon_teams_controller,
 )
 from app.controllers.hackathon_teams.dto import HackathonTeamDto
-from app.views.admin.dto import CreateHackathonDto, TeamIdDto
+from app.views.admin.dto import CreateHackathonDto
 
 router = APIRouter(
     tags=["Админка"],
@@ -38,61 +38,61 @@ async def create_hackathon(
 
 
 @router.delete(
-    "/hackathon/{id}",
+    "/hackathon/{hack_id}",
     summary="Удаление хакатона",
     description="Полностью удаляет данные о хакатоне",
 )
 async def delete_hackathon(
-    id: int,
+    hack_id: int,
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
 ):
-    return await hackathon_controller.delete(id)
+    return await hackathon_controller.delete(hack_id)
 
 
 @router.patch(
-    "/hackathon/{id}",
+    "/hackathon/{hack_id}",
     response_model=HackathonDto,
     summary="Обновление информации о хакатоне",
     description="Позволяет обновить одно или несколько полей о хакатоне. Все поля необязательные.",
 )
 async def update_hackathon_data(
-    id: int,
+    hack_id: int,
     dto: OptionalHackathonDto,
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
 ):
-    return await hackathon_controller.update(id, dto)
+    return await hackathon_controller.update(hack_id, dto)
 
 
 @router.post(
-    "/hackathon/{id}/teams",
+    "/hackathon/{hack_id}/teams/{team_id}",
     response_model=HackathonTeamDto,
     summary="Добавление команды-участника",
     description="Позволяет зарегистрировать команду как участника данного хакатона. Проводится проверка на существование команды (обращение в TeamService)",
 )
 async def add_team(
-    id: int,
-    dto: TeamIdDto,
+    hack_id: int,
+    team_id: int,
     hackathon_teams_controller: HackathonTeamsController = Depends(
         get_hackathon_teams_controller
     ),
 ):
-    return await hackathon_teams_controller.add(id, dto.team_id)
+    return await hackathon_teams_controller.add(hack_id, team_id)
 
 
 @router.delete(
-    "/hackathon/{id}/teams",
+    "/hackathon/{hack_id}/teams/{team_id}",
     summary="Удаление команды-участника",
     description="Позволяет убрать команду как участника хакатона.",
 )
 async def delete_team(
-    id: int,
-    dto: TeamIdDto,
+    hack_id: int,
+    team_id: int,
     hackathon_teams_controller: HackathonTeamsController = Depends(
         get_hackathon_teams_controller
     ),
 ):
-    return await hackathon_teams_controller.delete(id, dto.team_id)
+    return await hackathon_teams_controller.delete(hack_id, team_id)
