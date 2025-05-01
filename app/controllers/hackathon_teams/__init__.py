@@ -32,6 +32,9 @@ class IHackathonTeamsController(Protocol):
         self, hackathon_id: int, team_id: int
     ) -> HackathonTeamDto: ...
     async def delete(self, hackathon_id: int, team_id: int) -> None: ...
+    async def set_score(
+        self, hackathon_id: int, team_id: int, score: int
+    ) -> HackathonTeamDto: ...
 
 
 class HackathonTeamsController(IHackathonTeamsController):
@@ -93,6 +96,25 @@ class HackathonTeamsController(IHackathonTeamsController):
             return await participant_data.delete()
 
         raise TeamIsNotParticipatingException()
+
+    async def set_score(
+        self, hackathon_id: int, team_id: int, score: int
+    ) -> HackathonTeamDto:
+        team = await self._get_by_team_and_hackathon(hackathon_id, team_id)
+
+        if team is None:
+            raise TeamIsNotParticipatingException()
+
+        if not await self.hackathon_controller.get(hackathon_id):
+            raise NoSuchHackathonException()
+
+        if not await self.team_controller.get_team_exists(team_id):
+            raise NoSuchTeamException()
+
+        team.score = score
+        await team.save()
+
+        return HackathonTeamDto.from_tortoise(team)
 
 
 def get_hackathon_teams_controller(

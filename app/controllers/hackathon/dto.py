@@ -9,6 +9,7 @@ class HackathonDto(BaseModel):
     name: str
 
     start_date: datetime
+    score_start_date: datetime
     end_date: datetime
 
     @staticmethod
@@ -17,6 +18,7 @@ class HackathonDto(BaseModel):
             id=hackathon.id,
             name=hackathon.name,
             start_date=hackathon.start_date,
+            score_start_date=hackathon.score_start_date,
             end_date=hackathon.end_date,
         )
 
@@ -25,4 +27,5 @@ class OptionalHackathonDto(BaseModel):
     name: str | None = None
 
     start_date: datetime | None = None
+    score_start_date: datetime | None = None
     end_date: datetime | None = None

@@ -11,7 +11,7 @@ from app.controllers.hackathon_teams import (
     get_hackathon_teams_controller,
 )
 from app.controllers.hackathon_teams.dto import HackathonTeamDto
-from app.views.admin.dto import CreateHackathonDto
+from app.views.admin.dto import CreateHackathonDto, HackathonTeamScoreDto
 
 router = APIRouter(
     tags=["Админка"],
@@ -27,13 +27,16 @@ router = APIRouter(
     description="Регистрирует новый хакатон. Имя хакатона должно быть уникальным.",
 )
 async def create_hackathon(
-    data: CreateHackathonDto,
+    dto: CreateHackathonDto,
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
 ):
     return await hackathon_controller.create(
-        name=data.name, start_date=data.start_date, end_date=data.end_date
+        name=dto.name,
+        start_date=dto.start_date,
+        score_start_date=dto.score_start_date,
+        end_date=dto.end_date,
     )
 
 
@@ -96,3 +99,21 @@ async def delete_team(
     ),
 ):
     return await hackathon_teams_controller.delete(hack_id, team_id)
+
+
+@router.put(
+    "/hackathon/{hack_id}/teams/{team_id}/score",
+    summary="Оценка команды",
+    description="Позволяет установить оценку команде в стобальной шкале.",
+)
+async def change_team_score(
+    hack_id: int,
+    team_id: int,
+    dto: HackathonTeamScoreDto,
+    hackathon_teams_controller: HackathonTeamsController = Depends(
+        get_hackathon_teams_controller
+    ),
+):
+    return await hackathon_teams_controller.set_score(
+        hack_id, team_id, dto.score
+    )

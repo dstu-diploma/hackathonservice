@@ -11,3 +11,8 @@ class NoSuchHackathonException(HTTPException):
 class HackathonNameIsNotUniqueException(HTTPException):
     def __init__(self):
         super().__init__(status_code=400, detail="Данное имя занято!")
+
+
+class HackathonValidationErrorException(HTTPException):
+    def __init__(self, detail: str):
+        super().__init__(status_code=400, detail=detail)
