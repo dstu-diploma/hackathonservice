@@ -1,5 +1,7 @@
+from .dto import HackathonTeamDto, HackathonTeamWithMatesDto
+from fastapi import Depends, HTTPException
 from .exceptions import TeamServiceError
-from fastapi import Depends
+from functools import lru_cache
 from typing import Protocol
 from os import environ
 import httpx
@@ -30,12 +32,49 @@ class TeamController(ITeamController):
         except httpx.HTTPError as e:
             raise TeamServiceError()
 
+    async def get_hackathon_teams(
+        self, hackathon_id: int
+    ) -> list[HackathonTeamDto]:
+        url = f"{self.base_url}/hackathon/{hackathon_id}/teams"
+
+        try:
+            response = await self.client.get(url, headers=self.headers)
+            data: dict = response.json()
+            if response.status_code == 200:
+                return [HackathonTeamDto(**team) for team in data.values()]
+            else:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=data.get("detail", "Internal server error"),
+                )
+        except httpx.HTTPError as e:
+            raise TeamServiceError()
+
+    async def get_hackathon_team(
+        self, hackathon_id: int, team_id: int
+    ) -> HackathonTeamWithMatesDto:
+        url = f"{self.base_url}/hackathon/{hackathon_id}/teams/{team_id}"
+
+        try:
+            response = await self.client.get(url, headers=self.headers)
+            data: dict = response.json()
+            if response.status_code == 200:
+                return HackathonTeamWithMatesDto(**data)
+            else:
+                raise HTTPException(
+                    status_code=response.status_code,
+                    detail=data.get("detail", "Internal server error"),
+                )
+        except httpx.HTTPError as e:
+            raise TeamServiceError()
+
 
 async def get_http_client():
     async with httpx.AsyncClient() as client:
         yield client
 
 
+@lru_cache
 def get_team_controller(
     client: httpx.AsyncClient = Depends(get_http_client),
 ) -> TeamController:

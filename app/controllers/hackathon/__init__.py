@@ -1,3 +1,11 @@
+from tortoise.exceptions import ValidationError
+from app.models.hackathon import HackathonModel
+from tortoise.exceptions import IntegrityError
+from functools import lru_cache
+from datetime import datetime
+from typing import Protocol
+from fastapi import Depends
+
 from app.controllers.hackathon.exceptions import (
     HackathonValidationErrorException,
     NoSuchHackathonException,
@@ -8,12 +16,6 @@ from app.controllers.hackathon.dto import (
     OptionalHackathonDto,
     HackathonDto,
 )
-from tortoise.exceptions import ValidationError
-from app.models.hackathon import HackathonModel
-from tortoise.exceptions import IntegrityError
-from datetime import datetime
-from typing import Protocol
-from fastapi import Depends
 
 
 class IHackathonController(Protocol):
@@ -110,7 +112,6 @@ class HackathonController(IHackathonController):
         )
 
 
-def get_hackathon_controller(
-    controller: HackathonController = Depends(),
-) -> HackathonController:
-    return controller
+@lru_cache
+def get_hackathon_controller() -> HackathonController:
+    return HackathonController()
