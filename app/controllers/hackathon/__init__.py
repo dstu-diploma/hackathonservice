@@ -70,7 +70,7 @@ class HackathonController(IHackathonController):
         return HackathonDto.from_tortoise(hackathon)
 
     async def exists(self, hackathon_id: int) -> bool:
-        return await HackathonModel.exists(hackathon_id=hackathon_id)
+        return await HackathonModel.exists(id=hackathon_id)
 
     async def update(
         self, hackathon_id: int, update_dto: OptionalHackathonDto
