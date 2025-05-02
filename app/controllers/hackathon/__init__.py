@@ -26,6 +26,7 @@ class IHackathonController(Protocol):
     async def get_all(self) -> list[HackathonDto]: ...
     async def get(self, hackathon_id: int) -> HackathonDto: ...
     async def delete(self, hackathon_id: int) -> None: ...
+    async def can_edit_team_registry(self, hackathon_id: int) -> bool: ...
 
 
 class HackathonController(IHackathonController):
@@ -86,6 +87,10 @@ class HackathonController(IHackathonController):
     async def delete(self, hackathon_id: int) -> None:
         hackathon = await self._get_by_id(hackathon_id)
         await hackathon.delete()
+
+    async def can_edit_team_registry(self, hackathon_id: int) -> bool:
+        hackathon = await self._get_by_id(hackathon_id)
+        return datetime.now() < hackathon.start_date
 
 
 def get_hackathon_controller(
