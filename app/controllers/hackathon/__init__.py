@@ -105,7 +105,8 @@ class HackathonController(IHackathonController):
     ) -> CanEditTeamRegistryDto:
         hackathon = await self._get_by_id(hackathon_id)
         return CanEditTeamRegistryDto(
-            can_edit=datetime.now() < hackathon.start_date
+            can_edit=datetime.now(tz=hackathon.start_date.tzinfo)
+            < hackathon.start_date
         )
 
 
