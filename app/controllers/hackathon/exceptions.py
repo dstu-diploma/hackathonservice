@@ -4,7 +4,7 @@ from fastapi import HTTPException
 class NoSuchHackathonException(HTTPException):
     def __init__(self):
         super().__init__(
-            status_code=400, detail="Хакатона с таким ID не существует!"
+            status_code=404, detail="Хакатона с таким ID не существует!"
         )
 
 
