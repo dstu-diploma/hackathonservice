@@ -32,12 +32,12 @@ async def get_all(
 
 
 @router.get(
-    "/{id}",
+    "/{hack_id}",
     response_model=TotalHackathonDto,
     summary="Детальная информация о хакатоне",
 )
 async def get_by_id(
-    id: int,
+    hack_id: int,
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
@@ -47,21 +47,21 @@ async def get_by_id(
 ):
     """
     Возвращает полную информацию о хакатоне. Помимо общей информации (как в `GET /`), здесь перечислены все команды-участники.
-    По сути является комбинацией `GET /` и `GET /{id}/teams`.
+    По сути является комбинацией `GET /` и `GET /{hack_id}/teams`.
     """
-    hack_data = await hackathon_controller.get(id)
-    teams = await hackathon_teams_controller.get_by_hackathon(id)
+    hack_data = await hackathon_controller.get(hack_id)
+    teams = await hackathon_teams_controller.get_by_hackathon(hack_id)
 
     return TotalHackathonDto(teams=teams, **hack_data.model_dump())
 
 
 @router.get(
-    "/{id}/teams",
+    "/{hack_id}/teams",
     response_model=list[HackathonTeamDto],
     summary="Список команд-участников хакатона",
 )
 async def get_teams(
-    id: int,
+    hack_id: int,
     hackathon_teams_controller: HackathonTeamsController = Depends(
         get_hackathon_teams_controller
     ),
@@ -69,4 +69,4 @@ async def get_teams(
     """
     Возвращает список всех команд-участников данного хакатона.
     """
-    return await hackathon_teams_controller.get_by_hackathon(id)
+    return await hackathon_teams_controller.get_by_hackathon(hack_id)
