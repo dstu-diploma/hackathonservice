@@ -45,9 +45,9 @@ class TeamController(ITeamController):
 
         try:
             response = await self.client.get(url, headers=self.headers)
-            data: dict = response.json()
+            data = response.json()
             if response.status_code == 200:
-                return [HackathonTeamDto(**team) for team in data.values()]
+                return [HackathonTeamDto(**team) for team in data]
             else:
                 raise HTTPException(
                     status_code=response.status_code,
