@@ -36,6 +36,7 @@ async def create_hackathon(
         name=dto.name,
         start_date=dto.start_date,
         max_participant_count=dto.max_participant_count,
+        max_team_mates_count=dto.max_team_mates_count,
         score_start_date=dto.score_start_date,
         end_date=dto.end_date,
     )

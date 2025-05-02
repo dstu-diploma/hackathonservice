@@ -21,6 +21,7 @@ class IHackathonController(Protocol):
         self,
         name: str,
         max_participant_count: int,
+        max_team_mates_count: int,
         start_date: datetime,
         score_start_date: datetime,
         end_date: datetime,
@@ -44,6 +45,7 @@ class HackathonController(IHackathonController):
         self,
         name: str,
         max_participant_count: int,
+        max_team_mates_count: int,
         start_date: datetime,
         score_start_date: datetime,
         end_date: datetime,
@@ -53,6 +55,7 @@ class HackathonController(IHackathonController):
                 name=name,
                 start_date=start_date,
                 max_participant_count=max_participant_count,
+                max_team_mates_count=max_team_mates_count,
                 score_start_date=score_start_date,
                 end_date=end_date,
             )
