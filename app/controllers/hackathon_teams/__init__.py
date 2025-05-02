@@ -1,5 +1,5 @@
+from app.controllers.team.dto import HackathonTeamDto, HackathonTeamWithMatesDto
 from app.controllers.hackathon.exceptions import NoSuchHackathonException
-from app.controllers.team.dto import HackathonTeamDto
 from functools import lru_cache
 from typing import Protocol
 from fastapi import Depends
@@ -23,7 +23,9 @@ class IHackathonTeamsController(Protocol):
     async def get_by_hackathon(
         self, hackathon_id: int
     ) -> list[HackathonTeamDto]: ...
-    async def get_team_info(self, hackathon_id: int, team_id: int): ...
+    async def get_team_info(
+        self, hackathon_id: int, team_id: int
+    ) -> HackathonTeamWithMatesDto: ...
 
 
 class HackathonTeamsController(IHackathonTeamsController):
@@ -43,7 +45,9 @@ class HackathonTeamsController(IHackathonTeamsController):
 
         return await self.team_controller.get_hackathon_teams(hackathon_id)
 
-    async def get_team_info(self, hackathon_id: int, team_id: int):
+    async def get_team_info(
+        self, hackathon_id: int, team_id: int
+    ) -> HackathonTeamWithMatesDto:
         if not await self.hackathon_controller.exists(hackathon_id):
             raise NoSuchHackathonException()
 
