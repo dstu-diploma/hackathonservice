@@ -28,6 +28,7 @@ class IHackathonController(Protocol):
         score_start_date: datetime,
         end_date: datetime,
     ) -> HackathonDto: ...
+    async def exists(self, hackathon_id: int) -> bool: ...
     async def update(
         self, hackathon_id: int, update_dto: OptionalHackathonDto
     ) -> HackathonDto: ...
@@ -67,6 +68,9 @@ class HackathonController(IHackathonController):
             raise HackathonValidationErrorException("\n".join(e.args))
 
         return HackathonDto.from_tortoise(hackathon)
+
+    async def exists(self, hackathon_id: int) -> bool:
+        return await HackathonModel.exists(hackathon_id=hackathon_id)
 
     async def update(
         self, hackathon_id: int, update_dto: OptionalHackathonDto

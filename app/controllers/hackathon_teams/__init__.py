@@ -1,19 +1,18 @@
-from app.controllers.hackathon import HackathonController, IHackathonController
 from app.controllers.hackathon.exceptions import NoSuchHackathonException
+from app.controllers.team.dto import HackathonTeamDto
+from functools import lru_cache
+from typing import Protocol
+from fastapi import Depends
+
+from app.controllers.hackathon import (
+    HackathonController,
+    IHackathonController,
+    get_hackathon_controller,
+)
 from app.controllers.team import (
     TeamController,
     get_team_controller,
     ITeamController,
-)
-from app.models.hackathon import HackathonTeamsModel
-from .dto import HackathonTeamDto
-from typing import Protocol
-from fastapi import Depends
-
-from .exceptions import (
-    NoSuchTeamException,
-    TeamAlreadyParticipatingException,
-    TeamIsNotParticipatingException,
 )
 
 
@@ -24,17 +23,7 @@ class IHackathonTeamsController(Protocol):
     async def get_by_hackathon(
         self, hackathon_id: int
     ) -> list[HackathonTeamDto]: ...
-    async def get_by_team(self, team_id: int) -> list[HackathonTeamDto]: ...
-    async def is_participating(
-        self, hackathon_id: int, team_id: int
-    ) -> bool: ...
-    async def add(
-        self, hackathon_id: int, team_id: int
-    ) -> HackathonTeamDto: ...
-    async def delete(self, hackathon_id: int, team_id: int) -> None: ...
-    async def set_score(
-        self, hackathon_id: int, team_id: int, score: int
-    ) -> HackathonTeamDto: ...
+    async def get_team_info(self, hackathon_id: int, team_id: int): ...
 
 
 class HackathonTeamsController(IHackathonTeamsController):
@@ -49,76 +38,23 @@ class HackathonTeamsController(IHackathonTeamsController):
     async def get_by_hackathon(
         self, hackathon_id: int
     ) -> list[HackathonTeamDto]:
-        teams = await HackathonTeamsModel.filter(hackathon_id=hackathon_id)
-        return [HackathonTeamDto.from_tortoise(team) for team in teams]
-
-    async def get_by_team(self, team_id: int) -> list[HackathonTeamDto]:
-        teams = await HackathonTeamsModel.filter(team_id=team_id)
-        return [HackathonTeamDto.from_tortoise(team) for team in teams]
-
-    async def _get_by_team_and_hackathon(
-        self, hackathon_id: int, team_id: int
-    ) -> HackathonTeamsModel | None:
-        return await HackathonTeamsModel.get_or_none(
-            hackathon_id=hackathon_id, team_id=team_id
-        )
-
-    async def is_participating(self, hackathon_id: int, team_id: int) -> bool:
-        return await HackathonTeamsModel.exists(
-            hackathon_id=hackathon_id, team_id=team_id
-        )
-
-    async def add(self, hackathon_id: int, team_id: int) -> HackathonTeamDto:
-        participant_data = await self._get_by_team_and_hackathon(
-            hackathon_id=hackathon_id, team_id=team_id
-        )
-
-        if not await self.hackathon_controller.get(hackathon_id):
+        if not await self.hackathon_controller.exists(hackathon_id):
             raise NoSuchHackathonException()
 
-        if not await self.team_controller.get_team_exists(team_id):
-            raise NoSuchTeamException()
+        return await self.team_controller.get_hackathon_teams(hackathon_id)
 
-        if participant_data:
-            raise TeamAlreadyParticipatingException()
-
-        await HackathonTeamsModel.create(
-            hackathon_id=hackathon_id, team_id=team_id
-        )
-        return HackathonTeamDto(hackathon_id=hackathon_id, team_id=team_id)
-
-    async def delete(self, hackathon_id: int, team_id: int) -> None:
-        participant_data = await self._get_by_team_and_hackathon(
-            hackathon_id=hackathon_id, team_id=team_id
-        )
-
-        if participant_data:
-            return await participant_data.delete()
-
-        raise TeamIsNotParticipatingException()
-
-    async def set_score(
-        self, hackathon_id: int, team_id: int, score: int
-    ) -> HackathonTeamDto:
-        team = await self._get_by_team_and_hackathon(hackathon_id, team_id)
-
-        if team is None:
-            raise TeamIsNotParticipatingException()
-
-        if not await self.hackathon_controller.get(hackathon_id):
+    async def get_team_info(self, hackathon_id: int, team_id: int):
+        if not await self.hackathon_controller.exists(hackathon_id):
             raise NoSuchHackathonException()
 
-        if not await self.team_controller.get_team_exists(team_id):
-            raise NoSuchTeamException()
-
-        team.score = score
-        await team.save()
-
-        return HackathonTeamDto.from_tortoise(team)
+        return await self.team_controller.get_hackathon_team(
+            hackathon_id, team_id
+        )
 
 
+@lru_cache
 def get_hackathon_teams_controller(
-    hack_controller: HackathonController = Depends(),
+    hack_controller: HackathonController = Depends(get_hackathon_controller),
     team_controller: TeamController = Depends(get_team_controller),
 ) -> HackathonTeamsController:
     return HackathonTeamsController(hack_controller, team_controller)

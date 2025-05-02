@@ -1,3 +1,7 @@
+from app.controllers.team.dto import HackathonTeamDto
+from app.views.root.dto import TotalHackathonDto
+from fastapi import APIRouter, Depends
+
 from app.controllers.hackathon import (
     get_hackathon_controller,
     HackathonController,
@@ -6,11 +10,6 @@ from app.controllers.hackathon_teams import (
     get_hackathon_teams_controller,
     HackathonTeamsController,
 )
-
-from app.controllers.hackathon_teams.dto import HackathonTeamDto
-from app.views.root.dto import TotalHackathonDto
-from fastapi import APIRouter, Depends
-
 
 router = APIRouter(tags=["Основное"], prefix="")
 

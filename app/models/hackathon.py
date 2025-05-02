@@ -1,4 +1,3 @@
-from tortoise.validators import MinValueValidator, MaxValueValidator
 from tortoise.exceptions import ValidationError
 from tortoise.signals import pre_save
 from tortoise.models import Model
@@ -28,21 +27,3 @@ class HackathonModel(Model):
 @pre_save(HackathonModel)
 async def __validate_hackathon(_, instance: HackathonModel, __, ___) -> None:
     await instance.validate()
-
-
-class HackathonTeamsModel(Model):
-    hackathon: fields.ForeignKeyRelation[HackathonModel] = (
-        fields.ForeignKeyField(
-            model_name="models.HackathonModel",
-            related_name="hackathon_teams",
-            on_delete=fields.CASCADE,
-        )
-    )
-    team_id = fields.IntField()
-    score = fields.IntField(
-        null=True, validators=[MinValueValidator(0), MaxValueValidator(100)]
-    )
-
-    class Meta:
-        table: str = "hackathon_teams"
-        unique_together = (("hackathon", "team_id"),)

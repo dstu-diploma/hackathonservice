@@ -11,7 +11,13 @@ TEAM_SERVICE_API_KEY = environ.get("TEAM_SERVICE_API_KEY")
 
 
 class ITeamController(Protocol):
-    async def get_team_exists(self, team_id: int) -> bool: ...
+    async def get_team_exists(self, user_id: int) -> bool: ...
+    async def get_hackathon_teams(
+        self, hackathon_id: int
+    ) -> list[HackathonTeamDto]: ...
+    async def get_hackathon_team(
+        self, hackathon_id: int, team_id: int
+    ) -> HackathonTeamWithMatesDto: ...
 
 
 class TeamController(ITeamController):

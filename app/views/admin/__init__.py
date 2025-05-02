@@ -1,17 +1,17 @@
-from fastapi import APIRouter, Depends
-
-from app.controllers.auth import UserWithRole
-from app.controllers.hackathon import (
-    HackathonController,
-    get_hackathon_controller,
-)
 from app.controllers.hackathon.dto import HackathonDto, OptionalHackathonDto
 from app.controllers.hackathon_teams import (
-    HackathonTeamsController,
+    IHackathonTeamsController,
     get_hackathon_teams_controller,
 )
-from app.controllers.hackathon_teams.dto import HackathonTeamDto
-from app.views.admin.dto import CreateHackathonDto, HackathonTeamScoreDto
+from app.views.admin.dto import CreateHackathonDto
+from app.controllers.auth import UserWithRole
+from fastapi import APIRouter, Depends
+
+from app.controllers.hackathon import (
+    get_hackathon_controller,
+    HackathonController,
+)
+
 
 router = APIRouter(
     tags=["Админка"],
@@ -72,50 +72,16 @@ async def update_hackathon_data(
     return await hackathon_controller.update(hack_id, dto)
 
 
-@router.post(
+@router.get(
     "/hackathon/{hack_id}/teams/{team_id}",
-    response_model=HackathonTeamDto,
-    summary="Добавление команды-участника",
-    description="Позволяет зарегистрировать команду как участника данного хакатона. Проводится проверка на существование команды (обращение в TeamService)",
+    response_model=HackathonDto,
+    summary="Получение информации о команде",
 )
-async def add_team(
+async def get_hackathon_team_data(
     hack_id: int,
     team_id: int,
-    hackathon_teams_controller: HackathonTeamsController = Depends(
+    hackathon_teams_controller: IHackathonTeamsController = Depends(
         get_hackathon_teams_controller
     ),
 ):
-    return await hackathon_teams_controller.add(hack_id, team_id)
-
-
-@router.delete(
-    "/hackathon/{hack_id}/teams/{team_id}",
-    summary="Удаление команды-участника",
-    description="Позволяет убрать команду как участника хакатона.",
-)
-async def delete_team(
-    hack_id: int,
-    team_id: int,
-    hackathon_teams_controller: HackathonTeamsController = Depends(
-        get_hackathon_teams_controller
-    ),
-):
-    return await hackathon_teams_controller.delete(hack_id, team_id)
-
-
-@router.put(
-    "/hackathon/{hack_id}/teams/{team_id}/score",
-    summary="Оценка команды",
-    description="Позволяет установить оценку команде в стобальной шкале.",
-)
-async def change_team_score(
-    hack_id: int,
-    team_id: int,
-    dto: HackathonTeamScoreDto,
-    hackathon_teams_controller: HackathonTeamsController = Depends(
-        get_hackathon_teams_controller
-    ),
-):
-    return await hackathon_teams_controller.set_score(
-        hack_id, team_id, dto.score
-    )
+    return await hackathon_teams_controller.get_team_info(hack_id, team_id)
