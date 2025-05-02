@@ -32,3 +32,7 @@ class OptionalHackathonDto(BaseModel):
     start_date: datetime | None = None
     score_start_date: datetime | None = None
     end_date: datetime | None = None
+
+
+class CanEditTeamRegistryDto(BaseModel):
+    can_edit: bool

@@ -3,7 +3,11 @@ from app.controllers.hackathon.exceptions import (
     NoSuchHackathonException,
     HackathonNameIsNotUniqueException,
 )
-from app.controllers.hackathon.dto import HackathonDto, OptionalHackathonDto
+from app.controllers.hackathon.dto import (
+    CanEditTeamRegistryDto,
+    OptionalHackathonDto,
+    HackathonDto,
+)
 from tortoise.exceptions import ValidationError
 from app.models.hackathon import HackathonModel
 from tortoise.exceptions import IntegrityError
@@ -27,7 +31,9 @@ class IHackathonController(Protocol):
     async def get_all(self) -> list[HackathonDto]: ...
     async def get(self, hackathon_id: int) -> HackathonDto: ...
     async def delete(self, hackathon_id: int) -> None: ...
-    async def can_edit_team_registry(self, hackathon_id: int) -> bool: ...
+    async def can_edit_team_registry(
+        self, hackathon_id: int
+    ) -> CanEditTeamRegistryDto: ...
 
 
 class HackathonController(IHackathonController):
@@ -91,9 +97,13 @@ class HackathonController(IHackathonController):
         hackathon = await self._get_by_id(hackathon_id)
         await hackathon.delete()
 
-    async def can_edit_team_registry(self, hackathon_id: int) -> bool:
+    async def can_edit_team_registry(
+        self, hackathon_id: int
+    ) -> CanEditTeamRegistryDto:
         hackathon = await self._get_by_id(hackathon_id)
-        return datetime.now() < hackathon.start_date
+        return CanEditTeamRegistryDto(
+            can_edit=datetime.now() < hackathon.start_date
+        )
 
 
 def get_hackathon_controller(
