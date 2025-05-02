@@ -8,6 +8,7 @@ from tortoise import fields
 class HackathonModel(Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=40, unique=True)
+    max_participant_count = fields.IntField()
 
     start_date = fields.DatetimeField()
     score_start_date = fields.DatetimeField()

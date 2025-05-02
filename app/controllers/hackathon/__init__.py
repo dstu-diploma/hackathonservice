@@ -16,6 +16,7 @@ class IHackathonController(Protocol):
     async def create(
         self,
         name: str,
+        max_participant_count: int,
         start_date: datetime,
         score_start_date: datetime,
         end_date: datetime,
@@ -36,6 +37,7 @@ class HackathonController(IHackathonController):
     async def create(
         self,
         name: str,
+        max_participant_count: int,
         start_date: datetime,
         score_start_date: datetime,
         end_date: datetime,
@@ -44,6 +46,7 @@ class HackathonController(IHackathonController):
             hackathon = await HackathonModel.create(
                 name=name,
                 start_date=start_date,
+                max_participant_count=max_participant_count,
                 score_start_date=score_start_date,
                 end_date=end_date,
             )

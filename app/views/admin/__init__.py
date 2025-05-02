@@ -35,6 +35,7 @@ async def create_hackathon(
     return await hackathon_controller.create(
         name=dto.name,
         start_date=dto.start_date,
+        max_participant_count=dto.max_participant_count,
         score_start_date=dto.score_start_date,
         end_date=dto.end_date,
     )
