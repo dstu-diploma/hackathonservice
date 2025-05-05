@@ -35,6 +35,10 @@ class Permissions:
     UpdateCriterion = Group(UserRoles.Judge, UserRoles.Admin)
     DeleteCriterion = Group(UserRoles.Judge, UserRoles.Admin)
 
+    GetJudges = Group(UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin)
+    CreateJudge = UserRoles.Admin
+    DeleteJudge = UserRoles.Admin
+
     ReadTeamScores = Group(
         UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin
     )
