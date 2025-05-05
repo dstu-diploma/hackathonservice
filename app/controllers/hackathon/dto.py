@@ -1,8 +1,10 @@
-from datetime import datetime
-from re import L
 from pydantic import BaseModel
+from datetime import datetime
 
-from app.models.hackathon import HackathonCriterionModel, HackathonModel
+from app.models.hackathon import (
+    HackathonCriterionModel,
+    HackathonModel,
+)
 
 
 class HackathonDto(BaseModel):

@@ -17,6 +17,7 @@ class HackathonModel(Model):
     end_date = fields.DatetimeField()
 
     criteria: fields.ReverseRelation["HackathonCriterionModel"]
+    judges: fields.ReverseRelation["HackathonJudgeModel"]
 
     async def validate(self):
         if not (self.start_date < self.score_start_date < self.end_date):
@@ -67,6 +68,18 @@ class HackathonTeamScore(Model):
     class Meta:
         table: str = "team_scores"
         unique_together = (("team_id", "criterion"),)
+
+
+class HackathonJudgeModel(Model):
+    id = fields.IntField(pk=True)
+    hackathon: fields.ForeignKeyRelation[HackathonModel] = (
+        fields.ForeignKeyField("models.HackathonModel", related_name="judge")
+    )
+    user_id = fields.IntField()
+
+    class Meta:
+        table: str = "hackathon_judges"
+        unique_together = (("hackathon", "user_id"),)
 
 
 @pre_save(HackathonModel)

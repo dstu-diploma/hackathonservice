@@ -1,4 +1,3 @@
-from app.models.hackathon import HackathonCriterionModel, HackathonModel
 from tortoise.exceptions import ValidationError, IntegrityError
 from tortoise.functions import Sum
 from functools import lru_cache
@@ -7,18 +6,24 @@ from typing import Protocol
 
 from app.controllers.hackathon.exceptions import (
     HackathonCriteriaNameIsNotUniqueException,
-    HackathonCriteriaNotFoundException,
     HackathonCriteriaValidationErrorException,
+    HackathonCriteriaNotFoundException,
     HackathonValidationErrorException,
-    NoSuchHackathonException,
     HackathonNameIsNotUniqueException,
+    NoSuchHackathonException,
 )
+
 from app.controllers.hackathon.dto import (
     CanEditTeamRegistryDto,
-    CriterionDto,
-    FullHackathonDto,
     OptionalHackathonDto,
+    FullHackathonDto,
     HackathonDto,
+    CriterionDto,
+)
+
+from app.models.hackathon import (
+    HackathonCriterionModel,
+    HackathonModel,
 )
 
 
