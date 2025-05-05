@@ -1,6 +1,6 @@
 from app.controllers.hackathon.dto import HackathonDto
 from app.controllers.team.dto import HackathonTeamDto
-from app.views.root.dto import TotalHackathonDto
+from app.views.root.dto import HackathonWithTeamsDto
 from fastapi import APIRouter, Depends
 
 from app.controllers.hackathon import (
@@ -33,7 +33,7 @@ async def get_all(
 
 @router.get(
     "/{hack_id}",
-    response_model=TotalHackathonDto,
+    response_model=HackathonWithTeamsDto,
     summary="Детальная информация о хакатоне",
 )
 async def get_by_id(
@@ -49,10 +49,10 @@ async def get_by_id(
     Возвращает полную информацию о хакатоне. Помимо общей информации (как в `GET /`), здесь перечислены все команды-участники.
     По сути является комбинацией `GET /` и `GET /{hack_id}/teams`.
     """
-    hack_data = await hackathon_controller.get(hack_id)
+    hack_data = await hackathon_controller.get_full_info(hack_id)
     teams = await hackathon_teams_controller.get_by_hackathon(hack_id)
 
-    return TotalHackathonDto(teams=teams, **hack_data.model_dump())
+    return HackathonWithTeamsDto(teams=teams, **hack_data.model_dump())
 
 
 @router.get(

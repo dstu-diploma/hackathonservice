@@ -7,12 +7,16 @@ from tortoise import fields
 class HackathonModel(Model):
     id = fields.IntField(pk=True)
     name = fields.CharField(max_length=40, unique=True)
+    # описание обязательное, но для сохранения старых записей делаем default = ''
+    description = fields.CharField(max_length=2000, default="")
     max_participant_count = fields.IntField()
     max_team_mates_count = fields.IntField()
 
     start_date = fields.DatetimeField()
     score_start_date = fields.DatetimeField()
     end_date = fields.DatetimeField()
+
+    criteria: fields.ReverseRelation["HackathonCriterionModel"]
 
     async def validate(self):
         if not (self.start_date < self.score_start_date < self.end_date):
@@ -24,6 +28,59 @@ class HackathonModel(Model):
         table: str = "hackathons"
 
 
+class HackathonCriterionModel(Model):
+    id = fields.IntField(pk=True)
+    hackathon: fields.ForeignKeyRelation[HackathonModel] = (
+        fields.ForeignKeyField("models.HackathonModel", related_name="criteria")
+    )
+    name = fields.CharField(max_length=100)
+    weight = fields.FloatField()
+
+    async def validate(self):
+        if not (0 <= self.weight <= 1):
+            raise ValidationError("Вес критерия должен быть между 0 и 1")
+
+    class Meta:
+        table: str = "hackathon_criteria"
+        unique_together = (("hackathon", "name"),)
+
+
+class HackathonTeamScore(Model):
+    id = fields.IntField(pk=True)
+    team_id = fields.IntField()
+    criterion: fields.ForeignKeyRelation[HackathonCriterionModel] = (
+        fields.ForeignKeyField(
+            "models.HackathonCriterionModel", related_name="scores"
+        )
+    )
+    score = fields.IntField()
+
+    async def validate(self):
+        if not (0 <= self.score <= 100):
+            raise ValidationError("Оценка должна быть между 0 и 100")
+
+        if self.criterion.hackathon_id != self.team.hackathon_id:
+            raise ValidationError(
+                "Критерий и команда должны принадлежать одному хакатону"
+            )
+
+    class Meta:
+        table: str = "team_scores"
+        unique_together = (("team_id", "criterion"),)
+
+
 @pre_save(HackathonModel)
 async def __validate_hackathon(_, instance: HackathonModel, __, ___) -> None:
+    await instance.validate()
+
+
+@pre_save(HackathonCriterionModel)
+async def __validate_criterion(
+    _, instance: HackathonCriterionModel, __, ___
+) -> None:
+    await instance.validate()
+
+
+@pre_save(HackathonTeamScore)
+async def __validate_score(_, instance: HackathonTeamScore, __, ___) -> None:
     await instance.validate()
