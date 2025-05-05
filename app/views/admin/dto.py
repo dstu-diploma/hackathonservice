@@ -13,6 +13,10 @@ class CreateHackathonDto(BaseModel):
     end_date: datetime
 
 
+class JudgeUserIdDto(BaseModel):
+    judge_user_id: int
+
+
 class CreateCriterionDto(BaseModel):
     name: Annotated[str, StringConstraints(min_length=3, max_length=100)]
     weight: Annotated[float, Field(gt=0, le=1)]

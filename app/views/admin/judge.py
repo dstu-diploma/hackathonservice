@@ -4,6 +4,8 @@ from app.controllers.auth import PermittedAction
 from app.controllers.judge.dto import JudgeDto
 from fastapi import APIRouter, Body, Depends
 
+from app.views.admin.dto import JudgeUserIdDto
+
 router = APIRouter(tags=["Управление жюри"], prefix="/judge")
 
 
@@ -26,14 +28,14 @@ async def get_judges(
 )
 async def add_judge(
     hackathon_id: int,
-    judge_user_id: int = Body(),
+    dto: JudgeUserIdDto,
     _=Depends(PermittedAction(Permissions.CreateJudge)),
     judge_controller: IJudgeController = Depends(get_judge_controller),
 ):
     """
     Добавляет нового жюри на хакатон.
     """
-    return await judge_controller.add_judge(hackathon_id, judge_user_id)
+    return await judge_controller.add_judge(hackathon_id, dto.judge_user_id)
 
 
 @router.delete(
@@ -41,11 +43,11 @@ async def add_judge(
 )
 async def delete_judge(
     hackathon_id: int,
-    judge_user_id: int = Body(),
+    dto: JudgeUserIdDto,
     _=Depends(PermittedAction(Permissions.DeleteJudge)),
     judge_controller: IJudgeController = Depends(get_judge_controller),
 ):
     """
     Удаляет жюри из списка для данного хакатона.
     """
-    return await judge_controller.delete_judge(hackathon_id, judge_user_id)
+    return await judge_controller.delete_judge(hackathon_id, dto.judge_user_id)
