@@ -16,3 +16,8 @@ class CreateHackathonDto(BaseModel):
 class CreateCriterionDto(BaseModel):
     name: Annotated[str, StringConstraints(min_length=3, max_length=100)]
     weight: Annotated[float, Field(gt=0, le=1)]
+
+
+class CriterionScoreDto(BaseModel):
+    criterion_id: int
+    score: Annotated[int, Field(ge=0, le=100)]

@@ -1,24 +1,36 @@
+from sqlite3 import IntegrityError
+
+from pydantic import ValidationError
+from app.controllers.hackathon_teams.dto import HackathonTeamScoreDto
+from app.controllers.hackathon_teams.exceptions import (
+    HackathonTeamAlreadyScoredException,
+    HackathonTeamCantBeScoredDateExpiredException,
+)
+from app.controllers.judge import IJudgeController, get_judge_controller
 from app.controllers.team.dto import HackathonTeamDto, HackathonTeamWithMatesDto
-from app.controllers.hackathon.exceptions import NoSuchHackathonException
+from app.controllers.hackathon.exceptions import (
+    HackathonCriteriaValidationErrorException,
+    NoSuchHackathonException,
+)
 from functools import lru_cache
 from typing import Protocol
 from fastapi import Depends
 
 from app.controllers.hackathon import (
-    HackathonController,
-    IHackathonController,
     get_hackathon_controller,
+    IHackathonController,
 )
 from app.controllers.team import (
-    TeamController,
     get_team_controller,
     ITeamController,
 )
+from app.models.hackathon import HackathonTeamScore
 
 
 class IHackathonTeamsController(Protocol):
     hackathon_controller: IHackathonController
     team_controller: ITeamController
+    judge_controller: IJudgeController
 
     async def get_by_hackathon(
         self, hackathon_id: int
@@ -26,16 +38,29 @@ class IHackathonTeamsController(Protocol):
     async def get_team_info(
         self, hackathon_id: int, team_id: int
     ) -> HackathonTeamWithMatesDto: ...
+    async def set_score(
+        self,
+        hackathon_id: int,
+        team_id: int,
+        judge_user_id: int,
+        criterion_id: int,
+        score: int,
+    ) -> HackathonTeamScoreDto: ...
+    async def get_total_team_score(
+        self, team_id: int
+    ) -> list[HackathonTeamScoreDto]: ...
 
 
 class HackathonTeamsController(IHackathonTeamsController):
     def __init__(
         self,
         hackathon_controller: IHackathonController,
+        judge_controller: IJudgeController,
         team_controller: ITeamController,
     ):
         self.hackathon_controller = hackathon_controller
         self.team_controller = team_controller
+        self.judge_controller = judge_controller
 
     async def get_by_hackathon(
         self, hackathon_id: int
@@ -55,10 +80,73 @@ class HackathonTeamsController(IHackathonTeamsController):
             hackathon_id, team_id
         )
 
+    async def _can_score(self, hackathon_id: int) -> bool:
+        dto = await self.hackathon_controller.can_edit_team_registry(
+            hackathon_id
+        )
+        return dto.can_edit
+
+    async def _get_score(
+        self,
+        hack_team_id: int,
+        judge_user_id: int,
+        criterion_id: int,
+    ):
+        score = await HackathonTeamScore.get_or_none(
+            team_id=hack_team_id,
+            criterion_id=criterion_id,
+            judge_id=judge_user_id,
+        )
+
+        return score
+
+    async def set_score(
+        self,
+        hackathon_id: int,
+        team_id: int,
+        judge_user_id: int,
+        criterion_id: int,
+        score: int,
+    ) -> HackathonTeamScoreDto:
+        if not await self._can_score(hackathon_id):
+            raise HackathonTeamCantBeScoredDateExpiredException()
+
+        if await self._get_score(team_id, judge_user_id, criterion_id):
+            raise HackathonTeamAlreadyScoredException()
+
+        hack_team = await self.get_team_info(hackathon_id, team_id)
+        criterion = await self.hackathon_controller.get_criterion(criterion_id)
+        judge = await self.judge_controller.get_judge(
+            hackathon_id, judge_user_id
+        )
+
+        try:
+            record = await HackathonTeamScore.create(
+                team_id=hack_team.id,
+                criterion_id=criterion.id,
+                judge_id=judge.id,
+                score=score,
+            )
+            return HackathonTeamScoreDto.from_tortoise(record)
+        except ValidationError as e:
+            raise HackathonCriteriaValidationErrorException("\n".join(e.args))
+
+    async def get_total_team_score(
+        self, team_id: int
+    ) -> list[HackathonTeamScoreDto]:
+        scores = await HackathonTeamScore.filter(team_id=team_id).order_by(
+            "judge_id", "criterion_id"
+        )
+
+        return [HackathonTeamScoreDto.from_tortoise(score) for score in scores]
+
 
 @lru_cache
 def get_hackathon_teams_controller(
-    hack_controller: HackathonController = Depends(get_hackathon_controller),
-    team_controller: TeamController = Depends(get_team_controller),
+    hack_controller: IHackathonController = Depends(get_hackathon_controller),
+    team_controller: ITeamController = Depends(get_team_controller),
+    judge_controller: IJudgeController = Depends(get_judge_controller),
 ) -> HackathonTeamsController:
-    return HackathonTeamsController(hack_controller, team_controller)
+    return HackathonTeamsController(
+        hack_controller, judge_controller, team_controller
+    )

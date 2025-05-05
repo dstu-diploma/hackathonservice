@@ -24,6 +24,9 @@ class IJudgeController(Protocol):
     async def add_judge(
         self, hackathon_id: int, judge_user_id: int
     ) -> JudgeDto: ...
+    async def get_judge(
+        self, hackathon_id: int, judge_user_id: int
+    ) -> JudgeDto: ...
     async def get_judges(self, hackathon_id: int) -> list[JudgeDto]: ...
     async def delete_judge(
         self, hackathon_id: int, judge_user_id: int
@@ -52,6 +55,12 @@ class JudgeController(IJudgeController):
             raise HackathonJudgeDoesNotExistsException()
 
         return judge
+
+    async def get_judge(
+        self, hackathon_id: int, judge_user_id: int
+    ) -> JudgeDto:
+        judge = await self._get_judge(hackathon_id, judge_user_id)
+        return JudgeDto.from_tortoise(judge)
 
     async def add_judge(
         self, hackathon_id: int, judge_user_id: int

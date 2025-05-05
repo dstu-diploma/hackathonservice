@@ -47,6 +47,10 @@ class CanEditTeamRegistryDto(BaseModel):
     can_edit: bool
 
 
+class CanMakeScoresDto(BaseModel):
+    can_make: bool
+
+
 class CriterionDto(BaseModel):
     id: int
     name: str

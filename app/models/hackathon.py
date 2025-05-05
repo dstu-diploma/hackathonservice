@@ -46,30 +46,6 @@ class HackathonCriterionModel(Model):
         unique_together = (("hackathon", "name"),)
 
 
-class HackathonTeamScore(Model):
-    id = fields.IntField(pk=True)
-    team_id = fields.IntField()
-    criterion: fields.ForeignKeyRelation[HackathonCriterionModel] = (
-        fields.ForeignKeyField(
-            "models.HackathonCriterionModel", related_name="scores"
-        )
-    )
-    score = fields.IntField()
-
-    async def validate(self):
-        if not (0 <= self.score <= 100):
-            raise ValidationError("Оценка должна быть между 0 и 100")
-
-        if self.criterion.hackathon_id != self.team.hackathon_id:
-            raise ValidationError(
-                "Критерий и команда должны принадлежать одному хакатону"
-            )
-
-    class Meta:
-        table: str = "team_scores"
-        unique_together = (("team_id", "criterion"),)
-
-
 class HackathonJudgeModel(Model):
     id = fields.IntField(pk=True)
     hackathon: fields.ForeignKeyRelation[HackathonModel] = (
@@ -80,6 +56,30 @@ class HackathonJudgeModel(Model):
     class Meta:
         table: str = "hackathon_judges"
         unique_together = (("hackathon", "user_id"),)
+
+
+class HackathonTeamScore(Model):
+    id = fields.IntField(pk=True)
+    team_id = fields.IntField()
+    criterion: fields.ForeignKeyRelation[HackathonCriterionModel] = (
+        fields.ForeignKeyField(
+            "models.HackathonCriterionModel", related_name="scores"
+        )
+    )
+    judge: fields.ForeignKeyRelation[HackathonJudgeModel] = (
+        fields.ForeignKeyField(
+            "models.HackathonJudgeModel", related_name="scores"
+        )
+    )
+    score = fields.IntField()
+
+    async def validate(self):
+        if not (0 <= self.score <= 100):
+            raise ValidationError("Оценка должна быть между 0 и 100")
+
+    class Meta:
+        table: str = "team_scores"
+        unique_together = (("team_id", "criterion", "judge"),)
 
 
 @pre_save(HackathonModel)

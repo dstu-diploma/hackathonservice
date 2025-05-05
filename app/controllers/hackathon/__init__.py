@@ -15,6 +15,7 @@ from app.controllers.hackathon.exceptions import (
 
 from app.controllers.hackathon.dto import (
     CanEditTeamRegistryDto,
+    CanMakeScoresDto,
     OptionalHackathonDto,
     FullHackathonDto,
     HackathonDto,
@@ -48,9 +49,11 @@ class IHackathonController(Protocol):
     async def can_edit_team_registry(
         self, hackathon_id: int
     ) -> CanEditTeamRegistryDto: ...
+    async def can_make_scores(self, hackathon_id: int) -> CanMakeScoresDto: ...
     async def add_criterion(
         self, hackathon_id: int, name: str, weight: float
     ) -> CriterionDto: ...
+    async def get_criterion(self, criterion_id: int) -> CriterionDto: ...
     async def get_criteria(self, hackathon_id: int) -> list[CriterionDto]: ...
     async def update_criterion(
         self, hackathon_id: int, criterion_id: int, name: str, weight: float
@@ -138,6 +141,14 @@ class HackathonController(IHackathonController):
             < hackathon.start_date
         )
 
+    async def can_make_scores(self, hackathon_id: int) -> CanMakeScoresDto:
+        hackathon = await self._get_by_id(hackathon_id)
+        now = datetime.now(tz=hackathon.start_date.tzinfo)
+
+        return CanMakeScoresDto(
+            can_make=hackathon.score_start_date <= now <= hackathon.end_date
+        )
+
     async def add_criterion(
         self, hackathon_id: int, name: str, weight: float
     ) -> CriterionDto:
@@ -164,11 +175,19 @@ class HackathonController(IHackathonController):
             .values("sum_weight")
         )
 
-        cur_sum = sum_result.get("sum_weight", 0) + delta
+        cur_sum = (sum_result["sum_weight"] or 0) + delta
         if cur_sum > 1.01:
             raise HackathonCriteriaValidationErrorException(
                 "Сумма критериев должна быть не больше единицы!"
             )
+
+    async def get_criterion(self, criterion_id: int) -> CriterionDto:
+        criterion = await HackathonCriterionModel.get_or_none(id=criterion_id)
+
+        if criterion is None:
+            raise HackathonCriteriaNotFoundException()
+
+        return CriterionDto.from_tortoise(criterion)
 
     async def get_criteria(self, hackathon_id: int) -> list[CriterionDto]:
         await self._get_by_id(hackathon_id)
