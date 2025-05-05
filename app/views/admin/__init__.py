@@ -1,7 +1,8 @@
-from app.controllers.team.dto import HackathonTeamWithMatesDto
 from app.views.admin.dto import CreateCriterionDto, CreateHackathonDto
-from app.controllers.auth import UserWithRole
-from fastapi import APIRouter, Body, Depends
+from app.controllers.team.dto import HackathonTeamWithMatesDto
+from app.controllers.auth.permissions import Permissions
+from app.controllers.auth import PermittedAction
+from fastapi import APIRouter, Depends
 
 from app.controllers.hackathon import (
     get_hackathon_controller,
@@ -31,7 +32,7 @@ router = APIRouter(
 )
 async def create_hackathon(
     dto: CreateHackathonDto,
-    _=Depends(UserWithRole("admin")),
+    _=Depends(PermittedAction(Permissions.CreateHackathon)),
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
@@ -56,7 +57,7 @@ async def create_hackathon(
 )
 async def delete_hackathon(
     hack_id: int,
-    _=Depends(UserWithRole("admin")),
+    _=Depends(PermittedAction(Permissions.DeleteHackathon)),
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
@@ -75,7 +76,7 @@ async def delete_hackathon(
 async def update_hackathon_data(
     hack_id: int,
     dto: OptionalHackathonDto,
-    _=Depends(UserWithRole("admin")),
+    _=Depends(PermittedAction(Permissions.UpdateHackathon)),
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
@@ -94,7 +95,7 @@ async def update_hackathon_data(
 async def get_hackathon_team_data(
     hack_id: int,
     team_id: int,
-    _=Depends(UserWithRole("admin")),
+    _=Depends(PermittedAction(Permissions.ReadAdminHackathonTeamMates)),
     hackathon_teams_controller: IHackathonTeamsController = Depends(
         get_hackathon_teams_controller
     ),
@@ -112,7 +113,7 @@ async def get_hackathon_team_data(
 )
 async def get_hackathon_criteria(
     hack_id: int,
-    _=Depends(UserWithRole("admin")),
+    _=Depends(PermittedAction(Permissions.ReadAdminHackathonCriteria)),
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
@@ -131,7 +132,7 @@ async def get_hackathon_criteria(
 async def create_new_criterion(
     hack_id: int,
     dto: CreateCriterionDto,
-    _=Depends(UserWithRole("admin")),
+    _=Depends(PermittedAction(Permissions.CreateCriterion)),
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
@@ -153,7 +154,7 @@ async def update_existing_criterion(
     hack_id: int,
     criterion_id: int,
     dto: CreateCriterionDto,
-    _=Depends(UserWithRole("admin")),
+    _=Depends(PermittedAction(Permissions.UpdateCriterion)),
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
@@ -174,7 +175,7 @@ async def update_existing_criterion(
 async def delete_criterion(
     hack_id: int,
     criterion_id: int,
-    _=Depends(UserWithRole("admin")),
+    _=Depends(PermittedAction(Permissions.DeleteCriterion)),
     hackathon_controller: HackathonController = Depends(
         get_hackathon_controller
     ),
