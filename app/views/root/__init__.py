@@ -1,15 +1,16 @@
 from app.controllers.hackathon.dto import HackathonDto
+from app.controllers.judge import IJudgeController, get_judge_controller
 from app.controllers.team.dto import HackathonTeamDto
-from app.views.root.dto import HackathonWithTeamsDto
+from app.views.root.dto import DetailedHackathonDto
 from fastapi import APIRouter, Depends
 
 from app.controllers.hackathon import (
     get_hackathon_controller,
-    HackathonController,
+    IHackathonController,
 )
 from app.controllers.hackathon_teams import (
     get_hackathon_teams_controller,
-    HackathonTeamsController,
+    IHackathonTeamsController,
 )
 
 router = APIRouter(tags=["Основное"], prefix="")
@@ -21,7 +22,7 @@ router = APIRouter(tags=["Основное"], prefix="")
     summary="Список всех хакатонов",
 )
 async def get_all(
-    hackathon_controller: HackathonController = Depends(
+    hackathon_controller: IHackathonController = Depends(
         get_hackathon_controller
     ),
 ):
@@ -32,41 +33,45 @@ async def get_all(
 
 
 @router.get(
-    "/{hack_id}",
-    response_model=HackathonWithTeamsDto,
+    "/{hackathon_id}",
+    response_model=DetailedHackathonDto,
     summary="Детальная информация о хакатоне",
 )
 async def get_by_id(
-    hack_id: int,
-    hackathon_controller: HackathonController = Depends(
+    hackathon_id: int,
+    hackathon_controller: IHackathonController = Depends(
         get_hackathon_controller
     ),
-    hackathon_teams_controller: HackathonTeamsController = Depends(
+    hackathon_teams_controller: IHackathonTeamsController = Depends(
         get_hackathon_teams_controller
     ),
+    judges_controller: IJudgeController = Depends(get_judge_controller),
 ):
     """
     Возвращает полную информацию о хакатоне. Помимо общей информации (как в `GET /`), здесь перечислены все команды-участники.
-    По сути является комбинацией `GET /` и `GET /{hack_id}/teams`.
+    По сути является комбинацией `GET /` и `GET /{hackathon_id}/teams`.
     """
-    hack_data = await hackathon_controller.get_full_info(hack_id)
-    teams = await hackathon_teams_controller.get_by_hackathon(hack_id)
+    hack_data = await hackathon_controller.get_full_info(hackathon_id)
+    teams = await hackathon_teams_controller.get_by_hackathon(hackathon_id)
+    judges = await judges_controller.get_judges(hackathon_id)
 
-    return HackathonWithTeamsDto(teams=teams, **hack_data.model_dump())
+    return DetailedHackathonDto(
+        teams=teams, judges=judges, **hack_data.model_dump()
+    )
 
 
 @router.get(
-    "/{hack_id}/teams",
+    "/{hackathon_id}/teams",
     response_model=list[HackathonTeamDto],
     summary="Список команд-участников хакатона",
 )
 async def get_teams(
-    hack_id: int,
-    hackathon_teams_controller: HackathonTeamsController = Depends(
+    hackathon_id: int,
+    hackathon_teams_controller: IHackathonTeamsController = Depends(
         get_hackathon_teams_controller
     ),
 ):
     """
     Возвращает список всех команд-участников данного хакатона.
     """
-    return await hackathon_teams_controller.get_by_hackathon(hack_id)
+    return await hackathon_teams_controller.get_by_hackathon(hackathon_id)
