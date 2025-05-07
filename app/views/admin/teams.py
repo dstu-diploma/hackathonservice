@@ -63,7 +63,7 @@ async def set_hackathon_team_score(
     team_id: int,
     dto: CriterionScoreDto,
     judge_user_dto: AccessJWTPayloadDto = Depends(
-        PermittedAction(Permissions.ReadTeamScores)
+        PermittedAction(Permissions.CreateTeamScore)
     ),
     hackathon_teams_controller: IHackathonTeamsController = Depends(
         get_hackathon_teams_controller

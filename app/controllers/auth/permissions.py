@@ -14,35 +14,32 @@ class Group:
 
 PermissionAcl = UserRoles | Group | PublicAccess
 
+__ORGANIZERS = Group(UserRoles.Judge, UserRoles.Organizer)
+__PRIVILEGED = Group(UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin)
+
 
 class Permissions:
     ReadHackathonList = PublicAccess()
     ReadHackathonInfo = PublicAccess()
     ReadHackathonTeams = PublicAccess()
 
-    CreateHackathon = UserRoles.Admin
-    DeleteHackathon = UserRoles.Admin
-    UpdateHackathon = UserRoles.Admin
-    ScoreHackathon = UserRoles.Admin
+    CreateHackathon = __ORGANIZERS
+    DeleteHackathon = __ORGANIZERS
+    UpdateHackathon = __ORGANIZERS
+    ScoreHackathon = __ORGANIZERS
 
-    ReadAdminHackathonTeamMates = Group(
-        UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin
-    )
-    ReadAdminHackathonCriteria = Group(
-        UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin
-    )
+    ReadAdminHackathonTeamMates = __PRIVILEGED
+    ReadAdminHackathonCriteria = __PRIVILEGED
 
-    CreateCriterion = Group(UserRoles.Judge, UserRoles.Admin)
-    UpdateCriterion = Group(UserRoles.Judge, UserRoles.Admin)
-    DeleteCriterion = Group(UserRoles.Judge, UserRoles.Admin)
+    CreateCriterion = __ORGANIZERS
+    UpdateCriterion = __ORGANIZERS
+    DeleteCriterion = __ORGANIZERS
 
-    GetJudges = Group(UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin)
-    CreateJudge = UserRoles.Admin
-    DeleteJudge = UserRoles.Admin
+    GetJudges = __PRIVILEGED
+    CreateJudge = __ORGANIZERS
+    DeleteJudge = __ORGANIZERS
 
-    ReadTeamScores = Group(
-        UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin
-    )
+    ReadTeamScores = __PRIVILEGED
     CreateTeamScore = UserRoles.Judge
 
 
