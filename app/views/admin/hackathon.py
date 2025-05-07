@@ -11,6 +11,7 @@ from app.controllers.hackathon import (
 from app.controllers.hackathon.dto import (
     OptionalHackathonDto,
     HackathonDto,
+    TeamScoreDto,
 )
 
 
@@ -77,3 +78,25 @@ async def update_hackathon_data(
     Позволяет обновить одно или несколько полей о хакатоне. Все поля необязательные.
     """
     return await hackathon_controller.update(hackathon_id, dto)
+
+
+@router.put(
+    "/{hackathon_id}/score",
+    response_model=list[TeamScoreDto],
+    summary="Рассчет результатов",
+)
+async def calculate_team_score(
+    hackathon_id: int,
+    _=Depends(PermittedAction(Permissions.ScoreHackathon)),
+    hackathon_controller: HackathonController = Depends(
+        get_hackathon_controller
+    ),
+):
+    """
+    Позволяет рассчитать оценки по результатам хакатона. Если оценивание уже проводилось, то оценки будут заменены.
+    """
+    scores = await hackathon_controller.calculate_team_scores_for_hackathon(
+        hackathon_id, save_to_db=True
+    )
+    print(scores)
+    return scores

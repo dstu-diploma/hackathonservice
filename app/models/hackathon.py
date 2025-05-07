@@ -82,6 +82,15 @@ class HackathonTeamScore(Model):
         unique_together = (("team_id", "criterion", "judge"),)
 
 
+class HackathonTeamFinalScore(Model):
+    id = fields.IntField(pk=True)
+    team_id = fields.IntField(unique=True)
+    score = fields.FloatField()
+
+    class Meta:
+        table = "team_final_scores"
+
+
 @pre_save(HackathonModel)
 async def __validate_hackathon(_, instance: HackathonModel, __, ___) -> None:
     await instance.validate()

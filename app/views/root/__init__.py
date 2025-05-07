@@ -1,4 +1,4 @@
-from app.controllers.hackathon.dto import HackathonDto
+from app.controllers.hackathon.dto import HackathonDto, TeamScoreDto
 from app.controllers.judge import IJudgeController, get_judge_controller
 from app.controllers.team.dto import HackathonTeamDto
 from app.views.root.dto import DetailedHackathonDto
@@ -75,3 +75,21 @@ async def get_teams(
     Возвращает список всех команд-участников данного хакатона.
     """
     return await hackathon_teams_controller.get_by_hackathon(hackathon_id)
+
+
+@router.get(
+    "/{hackathon_id}/results",
+    response_model=list[TeamScoreDto],
+    summary="Таблица лидеров",
+)
+async def get_result_scores(
+    hackathon_id: int,
+    hackathon_teams_controller: IHackathonTeamsController = Depends(
+        get_hackathon_teams_controller
+    ),
+):
+    """
+    Возвращает таблицу лидеров хакатона (отсортированный список команд по оценкам).
+    Если дата окончания хакатона еще не наступила, то вернет 400.
+    """
+    return await hackathon_teams_controller.get_result_scores(hackathon_id)

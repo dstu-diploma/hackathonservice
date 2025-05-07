@@ -26,6 +26,11 @@ CREATE TABLE IF NOT EXISTS "hackathon_judges" (
     "hackathon_id" INT NOT NULL REFERENCES "hackathons" ("id") ON DELETE CASCADE,
     CONSTRAINT "uid_hackathon_j_hackath_5d7e29" UNIQUE ("hackathon_id", "user_id")
 );
+CREATE TABLE IF NOT EXISTS "team_final_scores" (
+    "id" SERIAL NOT NULL PRIMARY KEY,
+    "team_id" INT NOT NULL UNIQUE,
+    "score" DOUBLE PRECISION NOT NULL
+);
 CREATE TABLE IF NOT EXISTS "team_scores" (
     "id" SERIAL NOT NULL PRIMARY KEY,
     "team_id" INT NOT NULL,

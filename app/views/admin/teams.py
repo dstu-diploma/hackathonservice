@@ -50,7 +50,7 @@ async def get_hackathon_team_score(
     Возвращает все оценки команды от всех членов жюри, по каждому критериев.
     Не гарантирует, что здесь присутствуют все жюри или все критерии (жюри может не дать оценку по какому-либо хакатону).
     """
-    return await hackathon_teams_controller.get_total_team_score(team_id)
+    return await hackathon_teams_controller.get_all_team_scores(team_id)
 
 
 @router.post(

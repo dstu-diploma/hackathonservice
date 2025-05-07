@@ -23,6 +23,7 @@ class Permissions:
     CreateHackathon = UserRoles.Admin
     DeleteHackathon = UserRoles.Admin
     UpdateHackathon = UserRoles.Admin
+    ScoreHackathon = UserRoles.Admin
 
     ReadAdminHackathonTeamMates = Group(
         UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin

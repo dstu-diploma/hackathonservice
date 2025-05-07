@@ -1,10 +1,12 @@
 from sqlite3 import IntegrityError
 
 from pydantic import ValidationError
+from app.controllers.hackathon.dto import TeamScoreDto
 from app.controllers.hackathon_teams.dto import HackathonTeamScoreDto
 from app.controllers.hackathon_teams.exceptions import (
     HackathonTeamAlreadyScoredException,
     HackathonTeamCantBeScoredDateExpiredException,
+    HackathonTeamCantGetResultsException,
 )
 from app.controllers.judge import IJudgeController, get_judge_controller
 from app.controllers.team.dto import HackathonTeamDto, HackathonTeamWithMatesDto
@@ -24,7 +26,7 @@ from app.controllers.team import (
     get_team_controller,
     ITeamController,
 )
-from app.models.hackathon import HackathonTeamScore
+from app.models.hackathon import HackathonTeamFinalScore, HackathonTeamScore
 
 
 class IHackathonTeamsController(Protocol):
@@ -46,9 +48,12 @@ class IHackathonTeamsController(Protocol):
         criterion_id: int,
         score: int,
     ) -> HackathonTeamScoreDto: ...
-    async def get_total_team_score(
+    async def get_all_team_scores(
         self, team_id: int
     ) -> list[HackathonTeamScoreDto]: ...
+    async def get_result_scores(
+        self, hackathon_id: int
+    ) -> list[TeamScoreDto]: ...
 
 
 class HackathonTeamsController(IHackathonTeamsController):
@@ -131,7 +136,7 @@ class HackathonTeamsController(IHackathonTeamsController):
         except ValidationError as e:
             raise HackathonCriteriaValidationErrorException("\n".join(e.args))
 
-    async def get_total_team_score(
+    async def get_all_team_scores(
         self, team_id: int
     ) -> list[HackathonTeamScoreDto]:
         scores = await HackathonTeamScore.filter(team_id=team_id).order_by(
@@ -139,6 +144,20 @@ class HackathonTeamsController(IHackathonTeamsController):
         )
 
         return [HackathonTeamScoreDto.from_tortoise(score) for score in scores]
+
+    async def get_result_scores(self, hackathon_id: int) -> list[TeamScoreDto]:
+        if not await self.hackathon_controller.can_get_results(hackathon_id):
+            raise HackathonTeamCantGetResultsException()
+
+        teams = await self.get_by_hackathon(hackathon_id)
+        team_scores = await HackathonTeamFinalScore.filter(
+            team_id__in=map(lambda team: team.id, teams)
+        ).order_by("-score")
+
+        return [
+            TeamScoreDto(team_id=result.team_id, score=result.score)
+            for result in team_scores
+        ]
 
 
 @lru_cache

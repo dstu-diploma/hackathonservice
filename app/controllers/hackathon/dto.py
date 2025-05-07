@@ -51,6 +51,10 @@ class CanMakeScoresDto(BaseModel):
     can_make: bool
 
 
+class CanGetResultsDto(BaseModel):
+    can_get: bool
+
+
 class CriterionDto(BaseModel):
     id: int
     name: str
@@ -65,3 +69,8 @@ class CriterionDto(BaseModel):
 
 class FullHackathonDto(HackathonDto):
     criteria: list[CriterionDto]
+
+
+class TeamScoreDto(BaseModel):
+    team_id: int
+    score: float

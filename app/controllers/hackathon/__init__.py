@@ -1,3 +1,4 @@
+from collections import defaultdict
 from tortoise.exceptions import ValidationError, IntegrityError
 from tortoise.functions import Sum
 from functools import lru_cache
@@ -15,16 +16,20 @@ from app.controllers.hackathon.exceptions import (
 
 from app.controllers.hackathon.dto import (
     CanEditTeamRegistryDto,
+    CanGetResultsDto,
     CanMakeScoresDto,
     OptionalHackathonDto,
     FullHackathonDto,
     HackathonDto,
     CriterionDto,
+    TeamScoreDto,
 )
 
 from app.models.hackathon import (
     HackathonCriterionModel,
     HackathonModel,
+    HackathonTeamFinalScore,
+    HackathonTeamScore,
 )
 
 
@@ -50,6 +55,7 @@ class IHackathonController(Protocol):
         self, hackathon_id: int
     ) -> CanEditTeamRegistryDto: ...
     async def can_make_scores(self, hackathon_id: int) -> CanMakeScoresDto: ...
+    async def can_get_results(self, hackathon_id: int) -> CanGetResultsDto: ...
     async def add_criterion(
         self, hackathon_id: int, name: str, weight: float
     ) -> CriterionDto: ...
@@ -136,9 +142,9 @@ class HackathonController(IHackathonController):
         self, hackathon_id: int
     ) -> CanEditTeamRegistryDto:
         hackathon = await self._get_by_id(hackathon_id)
+        now = datetime.now(tz=hackathon.start_date.tzinfo)
         return CanEditTeamRegistryDto(
-            can_edit=datetime.now(tz=hackathon.start_date.tzinfo)
-            < hackathon.start_date
+            can_edit=hackathon.score_start_date <= now <= hackathon.end_date
         )
 
     async def can_make_scores(self, hackathon_id: int) -> CanMakeScoresDto:
@@ -148,6 +154,12 @@ class HackathonController(IHackathonController):
         return CanMakeScoresDto(
             can_make=hackathon.score_start_date <= now <= hackathon.end_date
         )
+
+    async def can_get_results(self, hackathon_id: int) -> CanGetResultsDto:
+        hackathon = await self._get_by_id(hackathon_id)
+        now = datetime.now(tz=hackathon.start_date.tzinfo)
+
+        return CanGetResultsDto(can_get=hackathon.end_date >= now)
 
     async def add_criterion(
         self, hackathon_id: int, name: str, weight: float
@@ -245,6 +257,47 @@ class HackathonController(IHackathonController):
 
         hackathon_dto = HackathonDto.from_tortoise(hackathon)
         return FullHackathonDto(**hackathon_dto.model_dump(), criteria=criteria)
+
+    async def calculate_team_scores_for_hackathon(
+        self, hackathon_id: int, save_to_db: bool = False
+    ) -> list[TeamScoreDto]:
+        scores = await HackathonTeamScore.filter(
+            criterion__hackathon_id=hackathon_id,
+            judge__hackathon_id=hackathon_id,
+        ).prefetch_related("criterion", "judge")
+
+        if not scores:
+            return []
+
+        team_judge_scores: defaultdict[
+            int, defaultdict[int, list[tuple[int, float]]]
+        ] = defaultdict(lambda: defaultdict(list))
+
+        for score in scores:
+            team_judge_scores[score.team_id][score.judge_id].append(  # type: ignore[attr-defined]
+                (score.score, score.criterion.weight)
+            )
+
+        team_final_scores = {}
+
+        for team_id, judges in team_judge_scores.items():
+            judge_totals = []
+            for evaluations in judges.values():
+                sj = sum(s * w for s, w in evaluations)
+                judge_totals.append(sj)
+            final_score = sum(judge_totals) / len(judge_totals)
+            team_final_scores[team_id] = final_score
+
+            if save_to_db:
+                await HackathonTeamFinalScore.update_or_create(
+                    {"score": final_score},
+                    team_id=team_id,
+                )
+
+        return [
+            TeamScoreDto(team_id=team_id, score=team_final_scores[team_id])
+            for team_id in team_final_scores
+        ]
 
 
 @lru_cache
