@@ -6,6 +6,7 @@ from datetime import datetime
 from typing import Protocol
 
 from app.controllers.hackathon.exceptions import (
+    HackathonCriteriaCantManageDateExpiredException,
     HackathonCriteriaNameIsNotUniqueException,
     HackathonCriteriaValidationErrorException,
     HackathonCriteriaNotFoundException,
@@ -15,6 +16,7 @@ from app.controllers.hackathon.exceptions import (
 )
 
 from app.controllers.hackathon.dto import (
+    CaEditHackathonSettingsDto,
     CanEditTeamRegistryDto,
     CanGetResultsDto,
     CanMakeScoresDto,
@@ -56,6 +58,9 @@ class IHackathonController(Protocol):
     ) -> CanEditTeamRegistryDto: ...
     async def can_make_scores(self, hackathon_id: int) -> CanMakeScoresDto: ...
     async def can_get_results(self, hackathon_id: int) -> CanGetResultsDto: ...
+    async def can_edit_hackathon_settings(
+        self, hackathon_id: int
+    ) -> CaEditHackathonSettingsDto: ...
     async def add_criterion(
         self, hackathon_id: int, name: str, weight: float
     ) -> CriterionDto: ...
@@ -68,6 +73,9 @@ class IHackathonController(Protocol):
         self, hackathon_id: int, criterion_id: int
     ) -> CriterionDto: ...
     async def get_full_info(self, hackathon_id: int) -> FullHackathonDto: ...
+    async def calculate_team_scores_for_hackathon(
+        self, hackathon_id: int, save_to_db: bool = False
+    ) -> list[TeamScoreDto]: ...
 
 
 class HackathonController(IHackathonController):
@@ -143,9 +151,7 @@ class HackathonController(IHackathonController):
     ) -> CanEditTeamRegistryDto:
         hackathon = await self._get_by_id(hackathon_id)
         now = datetime.now(tz=hackathon.start_date.tzinfo)
-        return CanEditTeamRegistryDto(
-            can_edit=hackathon.score_start_date <= now <= hackathon.end_date
-        )
+        return CanEditTeamRegistryDto(can_edit=now < hackathon.score_start_date)
 
     async def can_make_scores(self, hackathon_id: int) -> CanMakeScoresDto:
         hackathon = await self._get_by_id(hackathon_id)
@@ -161,9 +167,23 @@ class HackathonController(IHackathonController):
 
         return CanGetResultsDto(can_get=hackathon.end_date >= now)
 
+    async def can_edit_hackathon_settings(
+        self, hackathon_id: int
+    ) -> CaEditHackathonSettingsDto:
+        hackathon = await self._get_by_id(hackathon_id)
+        now = datetime.now(tz=hackathon.start_date.tzinfo)
+
+        return CaEditHackathonSettingsDto(can_edit=now <= hackathon.start_date)
+
+    async def _can_manage_criterion(self, hackacthon_id: int) -> bool:
+        return (await self.can_edit_hackathon_settings(hackacthon_id)).can_edit
+
     async def add_criterion(
         self, hackathon_id: int, name: str, weight: float
     ) -> CriterionDto:
+        if not await self._can_manage_criterion(hackathon_id):
+            raise HackathonCriteriaCantManageDateExpiredException()
+
         try:
             await self._validate_criteria_sum(hackathon_id, weight)
 
@@ -215,6 +235,9 @@ class HackathonController(IHackathonController):
     ) -> CriterionDto:
         await self._get_by_id(hackathon_id)
 
+        if not await self._can_manage_criterion(hackathon_id):
+            raise HackathonCriteriaCantManageDateExpiredException()
+
         criterion = await HackathonCriterionModel.get_or_none(
             id=criterion_id, hackathon_id=hackathon_id
         )
@@ -241,6 +264,9 @@ class HackathonController(IHackathonController):
         self, hackathon_id: int, criterion_id: int
     ) -> CriterionDto:
         await self._get_by_id(hackathon_id)
+
+        if not await self._can_manage_criterion(hackathon_id):
+            raise HackathonCriteriaCantManageDateExpiredException()
 
         criterion = await HackathonCriterionModel.get_or_none(
             id=criterion_id, hackathon_id=hackathon_id

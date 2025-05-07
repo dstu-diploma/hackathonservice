@@ -86,10 +86,8 @@ class HackathonTeamsController(IHackathonTeamsController):
         )
 
     async def _can_score(self, hackathon_id: int) -> bool:
-        dto = await self.hackathon_controller.can_edit_team_registry(
-            hackathon_id
-        )
-        return dto.can_edit
+        dto = await self.hackathon_controller.can_make_scores(hackathon_id)
+        return dto.can_make
 
     async def _get_score(
         self,

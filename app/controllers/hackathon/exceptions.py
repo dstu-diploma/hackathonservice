@@ -32,6 +32,14 @@ class HackathonCriteriaNotFoundException(HTTPException):
         )
 
 
+class HackathonCriteriaCantManageDateExpiredException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=400,
+            detail="Менять состав критериев оценивания можно только до начала хакатона!",
+        )
+
+
 class HackathonCriteriaValidationErrorException(HTTPException):
     def __init__(self, detail: str):
         super().__init__(status_code=400, detail=detail)

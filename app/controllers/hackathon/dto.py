@@ -55,6 +55,10 @@ class CanGetResultsDto(BaseModel):
     can_get: bool
 
 
+class CaEditHackathonSettingsDto(BaseModel):
+    can_edit: bool
+
+
 class CriterionDto(BaseModel):
     id: int
     name: str

@@ -33,7 +33,7 @@ async def add_judge(
     judge_controller: IJudgeController = Depends(get_judge_controller),
 ):
     """
-    Добавляет нового жюри на хакатон.
+    Добавляет нового жюри на хакатон. Менять состав судей можно только до начала даты оценивания.
     """
     return await judge_controller.add_judge(hackathon_id, dto.judge_user_id)
 
@@ -48,6 +48,6 @@ async def delete_judge(
     judge_controller: IJudgeController = Depends(get_judge_controller),
 ):
     """
-    Удаляет жюри из списка для данного хакатона.
+    Удаляет жюри из списка для данного хакатона. Менять состав судей можно только до начала даты оценивания.
     """
     return await judge_controller.delete_judge(hackathon_id, dto.judge_user_id)

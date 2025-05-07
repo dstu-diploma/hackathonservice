@@ -13,6 +13,7 @@ from app.controllers.hackathon import (
 
 from .exceptions import (
     HackathonJudgeAlreadyExistsException,
+    HackathonJudgeCantManageDateExpiredException,
     HackathonJudgeDoesNotExistsException,
 )
 
@@ -62,9 +63,19 @@ class JudgeController(IJudgeController):
         judge = await self._get_judge(hackathon_id, judge_user_id)
         return JudgeDto.from_tortoise(judge)
 
+    async def _can_manage(self, hackathon_id: int) -> bool:
+        return (
+            await self.hackathon_controller.can_edit_hackathon_settings(
+                hackathon_id
+            )
+        ).can_edit
+
     async def add_judge(
         self, hackathon_id: int, judge_user_id: int
     ) -> JudgeDto:
+        if not await self._can_manage(hackathon_id):
+            raise HackathonJudgeCantManageDateExpiredException()
+
         if not await self.user_controller.get_user_exists(judge_user_id):
             raise UserDoesNotExistException()
 
@@ -86,6 +97,9 @@ class JudgeController(IJudgeController):
     async def delete_judge(
         self, hackathon_id: int, judge_user_id: int
     ) -> JudgeDto:
+        if not await self._can_manage(hackathon_id):
+            raise HackathonJudgeCantManageDateExpiredException()
+
         judge = await self._get_judge(hackathon_id, judge_user_id)
         await judge.delete()
         return JudgeDto.from_tortoise(judge)
