@@ -1,8 +1,8 @@
 from app.controllers.judge import IJudgeController, get_judge_controller
-from app.controllers.auth.permissions import Permissions
 from app.controllers.auth import PermittedAction
 from app.controllers.judge.dto import JudgeDto
-from fastapi import APIRouter, Body, Depends
+from app.acl.permissions import Permissions
+from fastapi import APIRouter, Depends
 
 from app.views.admin.dto import JudgeUserIdDto
 

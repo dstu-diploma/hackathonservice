@@ -1,7 +1,7 @@
-from app.controllers.auth.permissions import Permissions
 from app.controllers.hackathon.dto import CriterionDto
 from app.views.admin.dto import CreateCriterionDto
 from app.controllers.auth import PermittedAction
+from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends
 
 from app.controllers.hackathon import (

@@ -1,4 +1,4 @@
-from app.controllers.auth.roles import UserRoles
+from app.acl.roles import UserRoles
 from pydantic import BaseModel
 from datetime import datetime
 

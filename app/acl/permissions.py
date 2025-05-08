@@ -1,4 +1,4 @@
-from app.controllers.auth.roles import UserRoles
+from .roles import UserRoles
 
 
 class PublicAccess:

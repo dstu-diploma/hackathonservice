@@ -1,11 +1,12 @@
-from app.controllers.auth.permissions import PermissionAcl, perform_check
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from app.acl.permissions import PermissionAcl, perform_check
 from app.controllers.auth.dto import AccessJWTPayloadDto
 from jose import ExpiredSignatureError, JWTError, jwt
 from pydantic import BaseModel
 from typing import Annotated
 from fastapi import Depends
 from os import environ
+
 
 from .exceptions import (
     InvalidTokenException,

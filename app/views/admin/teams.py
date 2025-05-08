@@ -1,8 +1,8 @@
 from app.controllers.auth.dto import AccessJWTPayloadDto
 from app.controllers.hackathon_teams.dto import HackathonTeamScoreDto
 from app.controllers.team.dto import HackathonTeamWithMatesDto
-from app.controllers.auth.permissions import Permissions
 from app.controllers.auth import PermittedAction
+from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends
 
 from app.controllers.hackathon_teams import (
