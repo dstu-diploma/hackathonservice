@@ -14,11 +14,11 @@ class Group:
 
 PermissionAcl = UserRoles | Group | PublicAccess
 
-__ORGANIZERS = Group(UserRoles.Judge, UserRoles.Organizer)
-__PRIVILEGED = Group(UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin)
-
 
 class Permissions:
+    __ORGANIZERS = Group(UserRoles.Judge, UserRoles.Organizer)
+    __PRIVILEGED = Group(UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin)
+
     ReadHackathonList = PublicAccess()
     ReadHackathonInfo = PublicAccess()
     ReadHackathonTeams = PublicAccess()
