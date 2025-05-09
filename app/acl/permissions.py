@@ -16,7 +16,7 @@ PermissionAcl = UserRoles | Group | PublicAccess
 
 
 class Permissions:
-    __ORGANIZERS = Group(UserRoles.Judge, UserRoles.Organizer)
+    __ORGANIZERS = Group(UserRoles.Admin, UserRoles.Organizer)
     __PRIVILEGED = Group(UserRoles.Judge, UserRoles.Organizer, UserRoles.Admin)
 
     ReadHackathonList = PublicAccess()
