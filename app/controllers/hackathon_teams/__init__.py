@@ -79,6 +79,9 @@ class IHackathonTeamsController(Protocol):
     async def get_result_scores(
         self, hackathon_id: int
     ) -> list[TeamScoreDto]: ...
+    async def get_submission(
+        self, hackathon_id: int, team_id: int
+    ) -> HackathonTeamSubmissionDto | None: ...
     async def upload_team_submission(
         self, hackathon_id: int, team_id: int, file: io.BytesIO
     ) -> HackathonTeamSubmissionDto: ...
@@ -188,6 +191,18 @@ class HackathonTeamsController(IHackathonTeamsController):
             TeamScoreDto(team_id=result.team_id, score=result.score)
             for result in team_scores
         ]
+
+    async def get_submission(
+        self, hackathon_id: int, team_id: int
+    ) -> HackathonTeamSubmissionDto | None:
+        submission = await TeamSubmissionModel.get_or_none(
+            hackathon_id=hackathon_id, team_id=team_id
+        )
+
+        if submission:
+            return HackathonTeamSubmissionDto.from_tortoise(submission)
+
+        return None
 
     async def upload_team_submission(
         self, hackathon_id: int, team_id: int, file: io.BytesIO

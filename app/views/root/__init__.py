@@ -111,26 +111,3 @@ async def get_result_scores(
     Если дата окончания хакатона еще не наступила, то вернет 400.
     """
     return await hackathon_teams_controller.get_result_scores(hackathon_id)
-
-
-@router.put(
-    "/{hackathon_id}/submission/{team_id}",
-    response_model=HackathonTeamSubmissionDto,
-    summary="Загрузить файл-результат",
-)
-async def upload_submission(
-    hackathon_id: int,
-    team_id: int,
-    file: UploadFile,
-    hackathon_teams_controller: IHackathonTeamsController = Depends(
-        get_hackathon_teams_controller
-    ),
-):
-    """
-    Загружает файл, результирующий работу команды (например, презентация или docx файл).
-    У команды может быть только один файл.
-    Текущий пользователь должен быть капитаном хакатоновской команды.
-    """
-    return await hackathon_teams_controller.upload_team_submission(
-        hackathon_id, team_id, io.BytesIO(await file.read())
-    )
