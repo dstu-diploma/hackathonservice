@@ -13,7 +13,7 @@ class HackathonTeamCantBeScoredDateExpiredException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=400,
-            detail="У данного хакатона истек срок, в течение которого можно было ставить оценки!",
+            detail="Ставить оценки можно только от даты начала оценивания и до окончания хакатона!",
         )
 
 
@@ -21,7 +21,7 @@ class HackathonTeamCantGetResultsException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=400,
-            detail="Для данного хакатона еще не наступил срок, когда можно смотреть результаты!",
+            detail="Результаты хакатона можно смотреть только после его окончания!",
         )
 
 

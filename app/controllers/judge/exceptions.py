@@ -21,5 +21,5 @@ class HackathonJudgeCantManageDateExpiredException(HTTPException):
     def __init__(self):
         super().__init__(
             status_code=400,
-            detail="Нельзя управлять списком судей после начала периода оценивания!",
+            detail="Списком судей можно управлять только до начала хакатона!",
         )
