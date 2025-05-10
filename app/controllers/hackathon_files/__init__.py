@@ -2,6 +2,7 @@ from app.controllers.s3 import IS3Controller, get_s3_controller
 from app.models import HackathonModel, HackathonDocumentModel
 from functools import lru_cache
 from datetime import timedelta
+from urllib.parse import quote
 from fastapi import Depends
 from typing import Protocol
 from uuid import uuid4
@@ -29,9 +30,13 @@ class IHackathonFilesController(Protocol):
     def is_allowed_file(
         self, filename: str, file_bytes: io.BytesIO
     ) -> bool: ...
-    async def list_files(
-        self, hackathon_id: int, expires_in: timedelta = timedelta(hours=2)
+    async def get_files(
+        self, hackathon_id: int, base_url: str
     ) -> list[HackathonDocumentWithLinkDto]: ...
+    async def get_doc_s3_key(self, document_id: int) -> str: ...
+    async def generate_redirect_link(
+        self, base_url: str, filename: str, document_id: int
+    ) -> str: ...
     async def delete_file(self, document_id: int) -> HackathonDocumentDto: ...
 
 
@@ -63,6 +68,8 @@ class HackathonFilesController(IHackathonFilesController):
             "application/vnd.ms-powerpoint",  # .ppt
             "application/vnd.openxmlformats-officedocument.presentationml.presentation",  # .pptx
             "text/plain",  # .txt
+            "image/jpeg",  # jpg/jpeg
+            "image/png",  # png
         ]
 
         return mime_type in allowed_mime_types
@@ -101,8 +108,8 @@ class HackathonFilesController(IHackathonFilesController):
 
         return HackathonDocumentDto.from_tortoise(document)
 
-    async def list_files(
-        self, hackathon_id: int, expires_in: timedelta = timedelta(hours=2)
+    async def get_files(
+        self, hackathon_id: int, base_url: str
     ) -> list[HackathonDocumentWithLinkDto]:
         docs = await HackathonDocumentModel.filter(
             hackathon_id=hackathon_id
@@ -111,17 +118,38 @@ class HackathonFilesController(IHackathonFilesController):
         result: list[HackathonDocumentWithLinkDto] = []
 
         for doc in docs:
-            url = self.s3_controller.generate_presigned_url(
-                self.bucket, doc.s3_key, expires_in
-            )
-
             doc_dto = HackathonDocumentDto.from_tortoise(doc)
 
             result.append(
-                HackathonDocumentWithLinkDto(link=url, **doc_dto.model_dump())
+                HackathonDocumentWithLinkDto(
+                    link=await self.generate_redirect_link(
+                        base_url, doc.name, doc.id
+                    ),
+                    **doc_dto.model_dump(),
+                )
             )
 
         return result
+
+    async def _get_document(self, document_id: int) -> HackathonDocumentModel:
+        doc = await HackathonDocumentModel.get_or_none(id=document_id)
+        if doc is None:
+            raise HackathonFileNotFoundException()
+
+        return doc
+
+    async def get_doc_s3_key(self, document_id: int) -> str:
+        doc = await self._get_document(document_id)
+        return doc.s3_key
+
+    async def generate_redirect_link(
+        self, base_url: str, filename: str, document_id: int
+    ) -> str:
+        doc = await self._get_document(document_id)
+
+        safe_filename = quote(filename)
+        redirect_url = f"{base_url}/download/{doc.id}/{safe_filename}"
+        return redirect_url
 
     async def delete_file(self, document_id: int) -> HackathonDocumentDto:
         doc = await HackathonDocumentModel.get_or_none(id=document_id)

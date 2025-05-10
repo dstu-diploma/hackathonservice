@@ -27,6 +27,8 @@ class Permissions:
     DeleteHackathon = __ORGANIZERS
     UpdateHackathon = __ORGANIZERS
     ScoreHackathon = __ORGANIZERS
+    UploadHackathonDocument = __ORGANIZERS
+    DeleteHackathonDocument = __ORGANIZERS
 
     ReadAdminHackathonTeamMates = __PRIVILEGED
     ReadAdminHackathonCriteria = __PRIVILEGED

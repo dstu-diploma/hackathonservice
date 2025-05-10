@@ -1,12 +1,14 @@
-from app.controllers.hackathon.dto import HackathonDto, TeamScoreDto
-from app.controllers.hackathon_files import (
-    IHackathonFilesController,
-    get_hackathon_files_controller,
-)
 from app.controllers.judge import IJudgeController, get_judge_controller
+from app.controllers.hackathon.dto import HackathonDto, TeamScoreDto
 from app.controllers.team.dto import HackathonTeamDto
 from app.views.root.dto import DetailedHackathonDto
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
+from os import environ
+
+from app.controllers.hackathon_files import (
+    get_hackathon_files_controller,
+    IHackathonFilesController,
+)
 
 from app.controllers.hackathon import (
     get_hackathon_controller,
@@ -18,6 +20,7 @@ from app.controllers.hackathon_teams import (
 )
 
 router = APIRouter(tags=["Основное"], prefix="")
+PUBLIC_API_URL = environ.get("PUBLIC_API_URL", None)
 
 
 @router.get(
@@ -43,6 +46,7 @@ async def get_all(
 )
 async def get_by_id(
     hackathon_id: int,
+    request: Request,
     hackathon_controller: IHackathonController = Depends(
         get_hackathon_controller
     ),
@@ -61,7 +65,9 @@ async def get_by_id(
     hack_data = await hackathon_controller.get_full_info(hackathon_id)
     teams = await hackathon_teams_controller.get_by_hackathon(hackathon_id)
     judges = await judges_controller.get_judges(hackathon_id)
-    uploads = await files_controller.list_files(hackathon_id)
+    uploads = await files_controller.get_files(
+        hackathon_id, PUBLIC_API_URL or str(request.base_url).rstrip("/")
+    )
 
     return DetailedHackathonDto(
         teams=teams, judges=judges, uploads=uploads, **hack_data.model_dump()

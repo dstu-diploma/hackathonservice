@@ -19,6 +19,7 @@ class IS3Controller(Protocol):
     def generate_presigned_url(
         self, bucket: str, key: str, expires_in: timedelta
     ) -> str: ...
+    def get_object(self, bucket: str, key: str): ...
 
 
 class S3Controller(IS3Controller):
@@ -28,9 +29,14 @@ class S3Controller(IS3Controller):
             endpoint_url=environ.get("S3_ENDPOINT"),
             aws_access_key_id=environ.get("S3_ACCESS_KEY"),
             aws_secret_access_key=environ.get("S3_SECRET_KEY"),
-            config=Config(signature_version="s3v4"),
+            config=Config(
+                signature_version="s3v4", s3={"addressing_style": "path"}
+            ),
             region_name="us-east-1",
         )
+
+    def get_object(self, bucket: str, key: str):
+        return self.__client.get_object(Bucket=bucket, Key=key)
 
     def upload_file(
         self, buf: io.BytesIO, bucket: str, key: str, content_type: str

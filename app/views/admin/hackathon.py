@@ -1,4 +1,5 @@
 import io
+from os import environ
 from uuid import uuid4
 from app.controllers.hackathon_files import (
     IHackathonFilesController,
@@ -11,7 +12,7 @@ from app.controllers.hackathon_files.dto import (
 from app.views.admin.dto import CreateHackathonDto, HackathonFileIdDto
 from app.controllers.auth import PermittedAction
 from app.acl.permissions import Permissions
-from fastapi import APIRouter, Depends, UploadFile
+from fastapi import APIRouter, Depends, Request, UploadFile
 
 from app.controllers.hackathon import (
     get_hackathon_controller,
@@ -26,6 +27,7 @@ from app.controllers.hackathon.dto import (
 
 
 router = APIRouter(tags=["Управление хакатонами"], prefix="/hackathon")
+PUBLIC_API_URL = environ.get("PUBLIC_API_URL", None)
 
 
 @router.post(
@@ -118,6 +120,7 @@ async def calculate_team_score(
 )
 async def get_hackathon_files(
     hackathon_id: int,
+    request: Request,
     _=Depends(PermittedAction(Permissions.ScoreHackathon)),
     hackathon_files_controller: IHackathonFilesController = Depends(
         get_hackathon_files_controller
@@ -126,7 +129,9 @@ async def get_hackathon_files(
     """
     Возвращает список всех загруженных файлов (приложений)
     """
-    files = await hackathon_files_controller.list_files(hackathon_id)
+    files = await hackathon_files_controller.get_files(
+        hackathon_id, PUBLIC_API_URL or str(request.base_url).rstrip("/")
+    )
     return files
 
 
@@ -138,7 +143,7 @@ async def get_hackathon_files(
 async def add_hackathon_file(
     file: UploadFile,
     hackathon_id: int,
-    _=Depends(PermittedAction(Permissions.ScoreHackathon)),
+    _=Depends(PermittedAction(Permissions.UploadHackathonDocument)),
     hackathon_files_controller: IHackathonFilesController = Depends(
         get_hackathon_files_controller
     ),
@@ -161,7 +166,7 @@ async def add_hackathon_file(
 async def delete_hackathon_file(
     hackathon_id: int,
     dto: HackathonFileIdDto,
-    _=Depends(PermittedAction(Permissions.ScoreHackathon)),
+    _=Depends(PermittedAction(Permissions.DeleteHackathonDocument)),
     hackathon_files_controller: IHackathonFilesController = Depends(
         get_hackathon_files_controller
     ),
