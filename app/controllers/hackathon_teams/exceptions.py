@@ -23,3 +23,11 @@ class HackathonTeamCantGetResultsException(HTTPException):
             status_code=400,
             detail="Для данного хакатона еще не наступил срок, когда можно смотреть результаты!",
         )
+
+
+class HackathonTeamCantUploadSubmissionsException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=400,
+            detail="Загружать результаты можно только до начала критериев оценивания!",
+        )

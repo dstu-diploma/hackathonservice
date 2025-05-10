@@ -20,6 +20,7 @@ from app.controllers.hackathon.dto import (
     CanEditTeamRegistryDto,
     CanGetResultsDto,
     CanMakeScoresDto,
+    CanUploadTeamSubmissionsDto,
     OptionalHackathonDto,
     FullHackathonDto,
     HackathonDto,
@@ -61,6 +62,9 @@ class IHackathonController(Protocol):
     async def can_edit_hackathon_settings(
         self, hackathon_id: int
     ) -> CaEditHackathonSettingsDto: ...
+    async def can_upload_submissions(
+        self, hackathon_id: int
+    ) -> CanUploadTeamSubmissionsDto: ...
     async def add_criterion(
         self, hackathon_id: int, name: str, weight: float
     ) -> CriterionDto: ...
@@ -151,7 +155,16 @@ class HackathonController(IHackathonController):
     ) -> CanEditTeamRegistryDto:
         hackathon = await self._get_by_id(hackathon_id)
         now = datetime.now(tz=hackathon.start_date.tzinfo)
-        return CanEditTeamRegistryDto(can_edit=now < hackathon.score_start_date)
+        return CanEditTeamRegistryDto(can_edit=now < hackathon.start_date)
+
+    async def can_upload_submissions(
+        self, hackathon_id: int
+    ) -> CanUploadTeamSubmissionsDto:
+        hackathon = await self._get_by_id(hackathon_id)
+        now = datetime.now(tz=hackathon.start_date.tzinfo)
+        return CanUploadTeamSubmissionsDto(
+            can_upload=hackathon.start_date <= now <= hackathon.score_start_date
+        )
 
     async def can_make_scores(self, hackathon_id: int) -> CanMakeScoresDto:
         hackathon = await self._get_by_id(hackathon_id)

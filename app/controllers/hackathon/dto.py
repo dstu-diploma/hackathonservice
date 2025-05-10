@@ -47,6 +47,10 @@ class CanEditTeamRegistryDto(BaseModel):
     can_edit: bool
 
 
+class CanUploadTeamSubmissionsDto(BaseModel):
+    can_upload: bool
+
+
 class CanMakeScoresDto(BaseModel):
     can_make: bool
 
