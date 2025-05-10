@@ -5,6 +5,7 @@ class HackathonTeamDto(BaseModel):
     id: int
     hackathon_id: int
     name: str
+    submission_url: str | None = None
 
 
 class HackathonTeamMateDto(BaseModel):
