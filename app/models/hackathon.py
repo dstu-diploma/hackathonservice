@@ -29,6 +29,22 @@ class HackathonModel(Model):
         table: str = "hackathons"
 
 
+class HackathonDocumentModel(Model):
+    id = fields.IntField(pk=True)
+    hackathon: fields.ForeignKeyRelation[HackathonModel] = (
+        fields.ForeignKeyField(
+            "models.HackathonModel", related_name="documents"
+        )
+    )
+    name = fields.CharField(max_length=255)
+    s3_key = fields.CharField(max_length=1024)
+    content_type = fields.CharField(max_length=255)
+    uploaded_at = fields.DatetimeField(auto_now_add=True)
+
+    class Meta:
+        table = "hackathon_documents"
+
+
 class HackathonCriterionModel(Model):
     id = fields.IntField(pk=True)
     hackathon: fields.ForeignKeyRelation[HackathonModel] = (

@@ -1,4 +1,8 @@
 from app.controllers.hackathon.dto import HackathonDto, TeamScoreDto
+from app.controllers.hackathon_files import (
+    IHackathonFilesController,
+    get_hackathon_files_controller,
+)
 from app.controllers.judge import IJudgeController, get_judge_controller
 from app.controllers.team.dto import HackathonTeamDto
 from app.views.root.dto import DetailedHackathonDto
@@ -46,6 +50,9 @@ async def get_by_id(
         get_hackathon_teams_controller
     ),
     judges_controller: IJudgeController = Depends(get_judge_controller),
+    files_controller: IHackathonFilesController = Depends(
+        get_hackathon_files_controller
+    ),
 ):
     """
     Возвращает полную информацию о хакатоне. Помимо общей информации (как в `GET /`), здесь перечислены все команды-участники.
@@ -54,9 +61,10 @@ async def get_by_id(
     hack_data = await hackathon_controller.get_full_info(hackathon_id)
     teams = await hackathon_teams_controller.get_by_hackathon(hackathon_id)
     judges = await judges_controller.get_judges(hackathon_id)
+    uploads = await files_controller.list_files(hackathon_id)
 
     return DetailedHackathonDto(
-        teams=teams, judges=judges, **hack_data.model_dump()
+        teams=teams, judges=judges, uploads=uploads, **hack_data.model_dump()
     )
 
 

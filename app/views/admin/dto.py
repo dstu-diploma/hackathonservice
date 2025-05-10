@@ -25,3 +25,7 @@ class CreateCriterionDto(BaseModel):
 class CriterionScoreDto(BaseModel):
     criterion_id: int
     score: Annotated[int, Field(ge=0, le=100)]
+
+
+class HackathonFileIdDto(BaseModel):
+    file_id: int
