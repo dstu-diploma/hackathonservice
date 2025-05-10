@@ -20,25 +20,3 @@ class HackathonTeamScoreDto(BaseModel):
             judge_user_id=score.judge_id,  # type: ignore[attr-defined]
             score=score.score,
         )
-
-
-class HackathonTeamSubmissionDto(BaseModel):
-    id: int
-    team_id: int
-    hackathon_id: int
-    name: str
-    s3_key: str
-    content_type: str
-    uploaded_at: datetime
-
-    @staticmethod
-    def from_tortoise(submission: TeamSubmissionModel):
-        return HackathonTeamSubmissionDto(
-            id=submission.id,
-            team_id=submission.team_id,
-            hackathon_id=submission.hackathon_id,  # type: ignore[attr-defined]
-            name=submission.name,
-            s3_key=submission.s3_key,
-            content_type=submission.content_type,
-            uploaded_at=submission.uploaded_at,
-        )

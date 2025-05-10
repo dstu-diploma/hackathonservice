@@ -1,19 +1,11 @@
-from fastapi import APIRouter, Depends, UploadFile
 from .auth import get_token_from_header
-import io
-
-from app.controllers.hackathon_teams.dto import (
-    HackathonTeamSubmissionDto,
-)
-from app.controllers.hackathon_teams import (
-    get_hackathon_teams_controller,
-    IHackathonTeamsController,
-)
+from fastapi import APIRouter, Depends
 
 from app.controllers.hackathon import (
     get_hackathon_controller,
     IHackathonController,
 )
+
 
 router = APIRouter(
     tags=["Internal"], prefix="/internal", include_in_schema=False
@@ -38,19 +30,10 @@ async def get_can_edit_team_registry(
     return await controller.can_edit_team_registry(id)
 
 
-@router.put(
-    "/{id}/submission/{team_id}",
-    response_model=HackathonTeamSubmissionDto,
-)
-async def upload_submission(
+@router.get("/{id}/can-upload-submissions")
+async def get_can_upload_submissions(
     id: int,
-    team_id: int,
-    file: UploadFile,
     _token: str = Depends(get_token_from_header),
-    hackathon_teams_controller: IHackathonTeamsController = Depends(
-        get_hackathon_teams_controller
-    ),
+    controller: IHackathonController = Depends(get_hackathon_controller),
 ):
-    return await hackathon_teams_controller.upload_team_submission(
-        id, team_id, io.BytesIO(await file.read())
-    )
+    return await controller.can_upload_submissions(id)

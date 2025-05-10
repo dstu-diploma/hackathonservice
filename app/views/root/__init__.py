@@ -1,12 +1,8 @@
-import io
-from app.controllers.auth import get_user_dto
-from app.controllers.auth.dto import AccessJWTPayloadDto
-from app.controllers.hackathon_teams.dto import HackathonTeamSubmissionDto
 from app.controllers.judge import IJudgeController, get_judge_controller
 from app.controllers.hackathon.dto import HackathonDto, TeamScoreDto
 from app.controllers.team.dto import HackathonTeamDto
 from app.views.root.dto import DetailedHackathonDto
-from fastapi import APIRouter, Depends, Request, UploadFile
+from fastapi import APIRouter, Depends, Request
 from os import environ
 
 from app.controllers.hackathon_files import (
