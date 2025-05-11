@@ -107,24 +107,6 @@ class HackathonTeamFinalScore(Model):
         table = "team_final_scores"
 
 
-class TeamSubmissionModel(Model):
-    id = fields.IntField(pk=True)
-    team_id = fields.IntField()
-    hackathon: fields.ForeignKeyRelation[HackathonModel] = (
-        fields.ForeignKeyField(
-            "models.HackathonModel", related_name="submissions"
-        )
-    )
-    name = fields.CharField(max_length=255)
-    s3_key = fields.CharField(max_length=1024)
-    content_type = fields.CharField(max_length=255)
-    uploaded_at = fields.DatetimeField(auto_now_add=True)
-
-    class Meta:
-        table = "team_submissions"
-        unique_together = (("team_id", "hackathon"),)
-
-
 @pre_save(HackathonModel)
 async def __validate_hackathon(_, instance: HackathonModel, __, ___) -> None:
     await instance.validate()

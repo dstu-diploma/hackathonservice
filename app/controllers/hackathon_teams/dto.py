@@ -1,7 +1,7 @@
 from datetime import datetime
 from pydantic import BaseModel
 
-from app.models.hackathon import HackathonTeamScore, TeamSubmissionModel
+from app.models.hackathon import HackathonTeamScore
 
 
 class HackathonTeamScoreDto(BaseModel):
