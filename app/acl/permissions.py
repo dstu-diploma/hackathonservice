@@ -21,7 +21,6 @@ class Permissions:
 
     ReadHackathonList = PublicAccess()
     ReadHackathonInfo = PublicAccess()
-    ReadHackathonTeams = PublicAccess()
 
     CreateHackathon = __ORGANIZERS
     DeleteHackathon = __ORGANIZERS
@@ -29,6 +28,7 @@ class Permissions:
     ScoreHackathon = __ORGANIZERS
     UploadHackathonDocument = __ORGANIZERS
     DeleteHackathonDocument = __ORGANIZERS
+    ReadHackathonTeams = __PRIVILEGED
 
     ReadAdminHackathonTeamMates = __PRIVILEGED
     ReadAdminHackathonCriteria = __PRIVILEGED

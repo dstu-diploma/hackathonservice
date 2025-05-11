@@ -24,6 +24,11 @@ from app.controllers.hackathon.dto import (
     HackathonDto,
     TeamScoreDto,
 )
+from app.controllers.team.dto import HackathonTeamDto
+from app.controllers.hackathon_teams import (
+    IHackathonTeamsController,
+    get_hackathon_teams_controller,
+)
 
 
 router = APIRouter(tags=["Управление хакатонами"], prefix="/hackathon")
@@ -111,6 +116,24 @@ async def calculate_team_score(
         hackathon_id, save_to_db=True
     )
     return scores
+
+
+@router.get(
+    "/{hackathon_id}/teams",
+    response_model=list[HackathonTeamDto],
+    summary="Список команд-участников хакатона",
+)
+async def get_teams(
+    hackathon_id: int,
+    _=Depends(PermittedAction(Permissions.ReadHackathonTeams)),
+    hackathon_teams_controller: IHackathonTeamsController = Depends(
+        get_hackathon_teams_controller
+    ),
+):
+    """
+    Возвращает список всех команд-участников данного хакатона.
+    """
+    return await hackathon_teams_controller.get_by_hackathon(hackathon_id)
 
 
 @router.get(

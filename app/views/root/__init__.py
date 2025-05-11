@@ -1,9 +1,12 @@
-from app.controllers.judge import IJudgeController, get_judge_controller
-from app.controllers.hackathon.dto import HackathonDto, TeamScoreDto
-from app.controllers.team.dto import HackathonTeamDto
 from app.views.root.dto import DetailedHackathonDto
 from fastapi import APIRouter, Depends, Request
 from os import environ
+
+from app.controllers.judge import (
+    IJudgeController,
+    get_judge_controller,
+    JudgeDto,
+)
 
 from app.controllers.hackathon_files import (
     get_hackathon_files_controller,
@@ -13,6 +16,9 @@ from app.controllers.hackathon_files import (
 from app.controllers.hackathon import (
     get_hackathon_controller,
     IHackathonController,
+    CriterionDto,
+    HackathonDto,
+    TeamScoreDto,
 )
 from app.controllers.hackathon_teams import (
     get_hackathon_teams_controller,
@@ -75,23 +81,6 @@ async def get_by_id(
 
 
 @router.get(
-    "/{hackathon_id}/teams",
-    response_model=list[HackathonTeamDto],
-    summary="Список команд-участников хакатона",
-)
-async def get_teams(
-    hackathon_id: int,
-    hackathon_teams_controller: IHackathonTeamsController = Depends(
-        get_hackathon_teams_controller
-    ),
-):
-    """
-    Возвращает список всех команд-участников данного хакатона.
-    """
-    return await hackathon_teams_controller.get_by_hackathon(hackathon_id)
-
-
-@router.get(
     "/{hackathon_id}/results",
     response_model=list[TeamScoreDto],
     summary="Таблица лидеров",
@@ -107,3 +96,35 @@ async def get_result_scores(
     Если дата окончания хакатона еще не наступила, то вернет 400.
     """
     return await hackathon_teams_controller.get_result_scores(hackathon_id)
+
+
+@router.get(
+    "/{hackathon_id}/criteria",
+    response_model=list[CriterionDto],
+    summary="Список критериев",
+)
+async def get_criteria(
+    hackathon_id: int,
+    hackathon_controller: IHackathonController = Depends(
+        get_hackathon_controller
+    ),
+):
+    """
+    Возвращает список критериев оценивания хакатона.
+    """
+    return await hackathon_controller.get_criteria(hackathon_id)
+
+
+@router.get(
+    "/{hackathon_id}/judges",
+    response_model=list[JudgeDto],
+    summary="Члены жюри",
+)
+async def get_judges(
+    hackathon_id: int,
+    judges_controller: IJudgeController = Depends(get_judge_controller),
+):
+    """
+    Возвращает список судей хакатона.
+    """
+    return await judges_controller.get_judges(hackathon_id)
