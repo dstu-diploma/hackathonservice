@@ -4,7 +4,7 @@ from app.controllers.judge.dto import JudgeDto
 from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends
 
-from app.views.admin.dto import JudgeUserIdDto
+from app.routers.admin.dto import JudgeUserIdDto
 
 router = APIRouter(tags=["Управление жюри"], prefix="/judge")
 

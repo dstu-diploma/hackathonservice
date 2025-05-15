@@ -9,7 +9,7 @@ from app.controllers.hackathon_teams import (
     get_hackathon_teams_controller,
     IHackathonTeamsController,
 )
-from app.views.admin.dto import CriterionScoreDto
+from app.routers.admin.dto import CriterionScoreDto
 
 router = APIRouter(tags=["Управление командами"], prefix="/teams")
 

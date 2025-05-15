@@ -1,4 +1,6 @@
-from app.views.root.dto import DetailedHackathonDto
+from app.controllers.judge import IJudgeController, get_judge_controller
+from app.controllers.hackathon.dto import HackathonDto, TeamScoreDto
+from app.routers.root.dto import DetailedHackathonDto
 from fastapi import APIRouter, Depends, Request
 from os import environ
 

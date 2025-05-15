@@ -9,7 +9,7 @@ from app.controllers.hackathon_files.dto import (
     HackathonDocumentDto,
     HackathonDocumentWithLinkDto,
 )
-from app.views.admin.dto import CreateHackathonDto, HackathonFileIdDto
+from app.routers.admin.dto import CreateHackathonDto, HackathonFileIdDto
 from app.controllers.auth import PermittedAction
 from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends, Request, UploadFile
