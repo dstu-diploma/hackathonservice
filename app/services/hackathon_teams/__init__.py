@@ -1,12 +1,12 @@
-from app.controllers.team.dto import HackathonTeamDto, HackathonTeamWithMatesDto
-from app.controllers.judge import IJudgeController, get_judge_controller
-from app.controllers.hackathon.dto import TeamScoreDto
+from app.services.team.dto import HackathonTeamDto, HackathonTeamWithMatesDto
+from app.services.judge import IJudgeService, get_judge_controller
+from app.services.hackathon.dto import TeamScoreDto
 from pydantic import ValidationError
 from functools import lru_cache
 from fastapi import Depends
 from typing import Protocol
 
-from app.controllers.hackathon_teams.dto import (
+from app.services.hackathon_teams.dto import (
     HackathonTeamScoreDto,
 )
 
@@ -15,31 +15,31 @@ from app.models.hackathon import (
     HackathonTeamScore,
 )
 
-from app.controllers.hackathon_teams.exceptions import (
+from app.services.hackathon_teams.exceptions import (
     HackathonTeamCantBeScoredDateExpiredException,
     HackathonTeamAlreadyScoredException,
     HackathonTeamCantGetResultsException,
 )
 
-from app.controllers.hackathon.exceptions import (
+from app.services.hackathon.exceptions import (
     HackathonCriteriaValidationErrorException,
     NoSuchHackathonException,
 )
 
-from app.controllers.hackathon import (
+from app.services.hackathon import (
     get_hackathon_controller,
-    IHackathonController,
+    IHackathonService,
 )
-from app.controllers.team import (
+from app.services.team import (
     get_team_controller,
-    ITeamController,
+    ITeamService,
 )
 
 
-class IHackathonTeamsController(Protocol):
-    hackathon_controller: IHackathonController
-    team_controller: ITeamController
-    judge_controller: IJudgeController
+class IHackathonTeamsService(Protocol):
+    hackathon_controller: IHackathonService
+    team_controller: ITeamService
+    judge_controller: IJudgeService
 
     async def get_by_hackathon(
         self, hackathon_id: int
@@ -63,12 +63,12 @@ class IHackathonTeamsController(Protocol):
     ) -> list[TeamScoreDto]: ...
 
 
-class HackathonTeamsController(IHackathonTeamsController):
+class HackathonTeamsService(IHackathonTeamsService):
     def __init__(
         self,
-        hackathon_controller: IHackathonController,
-        team_controller: ITeamController,
-        judge_controller: IJudgeController,
+        hackathon_controller: IHackathonService,
+        team_controller: ITeamService,
+        judge_controller: IJudgeService,
     ):
         self.hackathon_controller = hackathon_controller
         self.team_controller = team_controller
@@ -167,11 +167,11 @@ class HackathonTeamsController(IHackathonTeamsController):
 
 @lru_cache
 def get_hackathon_teams_controller(
-    hack_controller: IHackathonController = Depends(get_hackathon_controller),
-    team_controller: ITeamController = Depends(get_team_controller),
-    judge_controller: IJudgeController = Depends(get_judge_controller),
-) -> HackathonTeamsController:
-    return HackathonTeamsController(
+    hack_controller: IHackathonService = Depends(get_hackathon_controller),
+    team_controller: ITeamService = Depends(get_team_controller),
+    judge_controller: IJudgeService = Depends(get_judge_controller),
+) -> HackathonTeamsService:
+    return HackathonTeamsService(
         hack_controller,
         team_controller,
         judge_controller,

@@ -1,13 +1,13 @@
-from app.controllers.auth.dto import AccessJWTPayloadDto
-from app.controllers.hackathon_teams.dto import HackathonTeamScoreDto
-from app.controllers.team.dto import HackathonTeamWithMatesDto
-from app.controllers.auth import PermittedAction
+from app.services.auth.dto import AccessJWTPayloadDto
+from app.services.hackathon_teams.dto import HackathonTeamScoreDto
+from app.services.team.dto import HackathonTeamWithMatesDto
+from app.services.auth import PermittedAction
 from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends
 
-from app.controllers.hackathon_teams import (
+from app.services.hackathon_teams import (
     get_hackathon_teams_controller,
-    IHackathonTeamsController,
+    IHackathonTeamsService,
 )
 from app.routers.admin.dto import CriterionScoreDto
 
@@ -23,7 +23,7 @@ async def get_hackathon_team_data(
     hackathon_id: int,
     team_id: int,
     _=Depends(PermittedAction(Permissions.ReadAdminHackathonTeamMates)),
-    hackathon_teams_controller: IHackathonTeamsController = Depends(
+    hackathon_teams_controller: IHackathonTeamsService = Depends(
         get_hackathon_teams_controller
     ),
 ):
@@ -42,7 +42,7 @@ async def get_hackathon_team_score(
     hackathon_id: int,
     team_id: int,
     _=Depends(PermittedAction(Permissions.ReadTeamScores)),
-    hackathon_teams_controller: IHackathonTeamsController = Depends(
+    hackathon_teams_controller: IHackathonTeamsService = Depends(
         get_hackathon_teams_controller
     ),
 ):
@@ -65,7 +65,7 @@ async def set_hackathon_team_score(
     judge_user_dto: AccessJWTPayloadDto = Depends(
         PermittedAction(Permissions.CreateTeamScore)
     ),
-    hackathon_teams_controller: IHackathonTeamsController = Depends(
+    hackathon_teams_controller: IHackathonTeamsService = Depends(
         get_hackathon_teams_controller
     ),
 ):

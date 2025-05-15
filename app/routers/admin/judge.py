@@ -1,6 +1,6 @@
-from app.controllers.judge import IJudgeController, get_judge_controller
-from app.controllers.auth import PermittedAction
-from app.controllers.judge.dto import JudgeDto
+from app.services.judge import IJudgeService, get_judge_controller
+from app.services.auth import PermittedAction
+from app.services.judge.dto import JudgeDto
 from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends
 
@@ -15,7 +15,7 @@ router = APIRouter(tags=["Управление жюри"], prefix="/judge")
 async def get_judges(
     hackathon_id: int,
     _=Depends(PermittedAction(Permissions.GetJudges)),
-    judge_controller: IJudgeController = Depends(get_judge_controller),
+    judge_controller: IJudgeService = Depends(get_judge_controller),
 ):
     """
     Возвращает список всех жюри для данного хакатона.
@@ -30,7 +30,7 @@ async def add_judge(
     hackathon_id: int,
     dto: JudgeUserIdDto,
     _=Depends(PermittedAction(Permissions.CreateJudge)),
-    judge_controller: IJudgeController = Depends(get_judge_controller),
+    judge_controller: IJudgeService = Depends(get_judge_controller),
 ):
     """
     Добавляет нового жюри на хакатон. Менять состав судей можно только до начала даты оценивания.
@@ -45,7 +45,7 @@ async def delete_judge(
     hackathon_id: int,
     dto: JudgeUserIdDto,
     _=Depends(PermittedAction(Permissions.DeleteJudge)),
-    judge_controller: IJudgeController = Depends(get_judge_controller),
+    judge_controller: IJudgeService = Depends(get_judge_controller),
 ):
     """
     Удаляет жюри из списка для данного хакатона. Менять состав судей можно только до начала даты оценивания.

@@ -1,25 +1,25 @@
 import io
 from os import environ
 from uuid import uuid4
-from app.controllers.hackathon_files import (
-    IHackathonFilesController,
+from app.services.hackathon_files import (
+    IHackathonFilesService,
     get_hackathon_files_controller,
 )
-from app.controllers.hackathon_files.dto import (
+from app.services.hackathon_files.dto import (
     HackathonDocumentDto,
     HackathonDocumentWithLinkDto,
 )
 from app.routers.admin.dto import CreateHackathonDto, HackathonFileIdDto
-from app.controllers.auth import PermittedAction
+from app.services.auth import PermittedAction
 from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends, Request, UploadFile
 
-from app.controllers.hackathon import (
+from app.services.hackathon import (
     get_hackathon_controller,
-    HackathonController,
+    HackathonService,
 )
 
-from app.controllers.hackathon.dto import (
+from app.services.hackathon.dto import (
     OptionalHackathonDto,
     HackathonDto,
     TeamScoreDto,
@@ -43,9 +43,7 @@ PUBLIC_API_URL = environ.get("PUBLIC_API_URL", None)
 async def create_hackathon(
     dto: CreateHackathonDto,
     _=Depends(PermittedAction(Permissions.CreateHackathon)),
-    hackathon_controller: HackathonController = Depends(
-        get_hackathon_controller
-    ),
+    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
 ):
     """
     Регистрирует новый хакатон. Имя хакатона должно быть уникальным.
@@ -68,9 +66,7 @@ async def create_hackathon(
 async def delete_hackathon(
     hackathon_id: int,
     _=Depends(PermittedAction(Permissions.DeleteHackathon)),
-    hackathon_controller: HackathonController = Depends(
-        get_hackathon_controller
-    ),
+    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
 ):
     """
     Полностью удаляет данные о хакатоне.
@@ -87,9 +83,7 @@ async def update_hackathon_data(
     hackathon_id: int,
     dto: OptionalHackathonDto,
     _=Depends(PermittedAction(Permissions.UpdateHackathon)),
-    hackathon_controller: HackathonController = Depends(
-        get_hackathon_controller
-    ),
+    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
 ):
     """
     Позволяет обновить одно или несколько полей о хакатоне. Все поля необязательные.
@@ -105,9 +99,7 @@ async def update_hackathon_data(
 async def calculate_team_score(
     hackathon_id: int,
     _=Depends(PermittedAction(Permissions.ScoreHackathon)),
-    hackathon_controller: HackathonController = Depends(
-        get_hackathon_controller
-    ),
+    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
 ):
     """
     Позволяет рассчитать оценки по результатам хакатона. Если оценивание уже проводилось, то оценки будут заменены.
@@ -145,7 +137,7 @@ async def get_hackathon_files(
     hackathon_id: int,
     request: Request,
     _=Depends(PermittedAction(Permissions.ScoreHackathon)),
-    hackathon_files_controller: IHackathonFilesController = Depends(
+    hackathon_files_controller: IHackathonFilesService = Depends(
         get_hackathon_files_controller
     ),
 ):
@@ -167,7 +159,7 @@ async def add_hackathon_file(
     file: UploadFile,
     hackathon_id: int,
     _=Depends(PermittedAction(Permissions.UploadHackathonDocument)),
-    hackathon_files_controller: IHackathonFilesController = Depends(
+    hackathon_files_controller: IHackathonFilesService = Depends(
         get_hackathon_files_controller
     ),
 ):
@@ -190,7 +182,7 @@ async def delete_hackathon_file(
     hackathon_id: int,
     dto: HackathonFileIdDto,
     _=Depends(PermittedAction(Permissions.DeleteHackathonDocument)),
-    hackathon_files_controller: IHackathonFilesController = Depends(
+    hackathon_files_controller: IHackathonFilesService = Depends(
         get_hackathon_files_controller
     ),
 ):

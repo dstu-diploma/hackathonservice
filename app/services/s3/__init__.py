@@ -9,7 +9,7 @@ import io
 S3_AUTOCREATE_BUCKETS = environ.get("S3_AUTOCREATE_BUCKETS", "False") == "True"
 
 
-class IS3Controller(Protocol):
+class IS3Service(Protocol):
     def upload_file(
         self, buf: io.BytesIO, bucket: str, key: str, content_type: str
     ) -> None: ...
@@ -22,7 +22,7 @@ class IS3Controller(Protocol):
     def get_object(self, bucket: str, key: str): ...
 
 
-class S3Controller(IS3Controller):
+class S3Service(IS3Service):
     def __init__(self):
         self.__client = boto3.client(
             "s3",
@@ -78,5 +78,5 @@ class S3Controller(IS3Controller):
 
 
 @lru_cache
-def get_s3_controller() -> S3Controller:
-    return S3Controller()
+def get_s3_controller() -> S3Service:
+    return S3Service()

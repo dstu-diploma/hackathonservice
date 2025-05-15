@@ -1,9 +1,9 @@
 from .auth import get_token_from_header
 from fastapi import APIRouter, Depends
 
-from app.controllers.hackathon import (
+from app.services.hackathon import (
     get_hackathon_controller,
-    IHackathonController,
+    IHackathonService,
 )
 
 
@@ -16,7 +16,7 @@ router = APIRouter(
 async def get_by_hackathon_id(
     id: int,
     _token: str = Depends(get_token_from_header),
-    controller: IHackathonController = Depends(get_hackathon_controller),
+    controller: IHackathonService = Depends(get_hackathon_controller),
 ):
     return await controller.get(id)
 
@@ -25,7 +25,7 @@ async def get_by_hackathon_id(
 async def get_can_edit_team_registry(
     id: int,
     _token: str = Depends(get_token_from_header),
-    controller: IHackathonController = Depends(get_hackathon_controller),
+    controller: IHackathonService = Depends(get_hackathon_controller),
 ):
     return await controller.can_edit_team_registry(id)
 
@@ -34,6 +34,6 @@ async def get_can_edit_team_registry(
 async def get_can_upload_submissions(
     id: int,
     _token: str = Depends(get_token_from_header),
-    controller: IHackathonController = Depends(get_hackathon_controller),
+    controller: IHackathonService = Depends(get_hackathon_controller),
 ):
     return await controller.can_upload_submissions(id)

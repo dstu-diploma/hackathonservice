@@ -1,13 +1,13 @@
-from app.controllers.user import IUserController, get_user_controller
-from app.controllers.user.exceptions import UserDoesNotExistException
+from app.services.user import IUserService, get_user_controller
+from app.services.user.exceptions import UserDoesNotExistException
 from app.models.hackathon import HackathonJudgeModel
 from functools import lru_cache
 from typing import Protocol
 from fastapi import Depends
 from .dto import JudgeDto
 
-from app.controllers.hackathon import (
-    IHackathonController,
+from app.services.hackathon import (
+    IHackathonService,
     get_hackathon_controller,
 )
 
@@ -18,9 +18,9 @@ from .exceptions import (
 )
 
 
-class IJudgeController(Protocol):
-    user_controller: IUserController
-    hackathon_controller: IHackathonController
+class IJudgeService(Protocol):
+    user_controller: IUserService
+    hackathon_controller: IHackathonService
 
     async def add_judge(
         self, hackathon_id: int, judge_user_id: int
@@ -34,14 +34,14 @@ class IJudgeController(Protocol):
     ) -> JudgeDto: ...
 
 
-class JudgeController(IJudgeController):
-    user_controller: IUserController
-    hackathon_controller: IHackathonController
+class JudgeService(IJudgeService):
+    user_controller: IUserService
+    hackathon_controller: IHackathonService
 
     def __init__(
         self,
-        user_controller: IUserController,
-        hackathon_controller: IHackathonController,
+        user_controller: IUserService,
+        hackathon_controller: IHackathonService,
     ):
         self.user_controller = user_controller
         self.hackathon_controller = hackathon_controller
@@ -107,9 +107,7 @@ class JudgeController(IJudgeController):
 
 @lru_cache
 def get_judge_controller(
-    user_controller: IUserController = Depends(get_user_controller),
-    hackathon_controller: IHackathonController = Depends(
-        get_hackathon_controller
-    ),
-) -> JudgeController:
-    return JudgeController(user_controller, hackathon_controller)
+    user_controller: IUserService = Depends(get_user_controller),
+    hackathon_controller: IHackathonService = Depends(get_hackathon_controller),
+) -> JudgeService:
+    return JudgeService(user_controller, hackathon_controller)

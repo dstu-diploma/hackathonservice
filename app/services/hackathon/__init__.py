@@ -5,7 +5,7 @@ from functools import lru_cache
 from datetime import datetime
 from typing import Protocol
 
-from app.controllers.hackathon.exceptions import (
+from app.services.hackathon.exceptions import (
     HackathonCriteriaCantManageDateExpiredException,
     HackathonCriteriaNameIsNotUniqueException,
     HackathonCriteriaValidationErrorException,
@@ -15,7 +15,7 @@ from app.controllers.hackathon.exceptions import (
     NoSuchHackathonException,
 )
 
-from app.controllers.hackathon.dto import (
+from app.services.hackathon.dto import (
     CaEditHackathonSettingsDto,
     CanEditTeamRegistryDto,
     CanGetResultsDto,
@@ -36,7 +36,7 @@ from app.models.hackathon import (
 )
 
 
-class IHackathonController(Protocol):
+class IHackathonService(Protocol):
     async def create(
         self,
         name: str,
@@ -82,7 +82,7 @@ class IHackathonController(Protocol):
     ) -> list[TeamScoreDto]: ...
 
 
-class HackathonController(IHackathonController):
+class HackathonService(IHackathonService):
     def __init__(self):
         pass
 
@@ -340,5 +340,5 @@ class HackathonController(IHackathonController):
 
 
 @lru_cache
-def get_hackathon_controller() -> HackathonController:
-    return HackathonController()
+def get_hackathon_controller() -> HackathonService:
+    return HackathonService()

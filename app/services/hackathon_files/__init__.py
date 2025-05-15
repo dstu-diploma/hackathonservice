@@ -1,4 +1,4 @@
-from app.controllers.s3 import IS3Controller, get_s3_controller
+from app.services.s3 import IS3Service, get_s3_controller
 from app.models import HackathonModel, HackathonDocumentModel
 from functools import lru_cache
 from datetime import timedelta
@@ -10,19 +10,19 @@ from . import utils
 import mimetypes
 import io
 
-from app.controllers.hackathon_files.dto import (
+from app.services.hackathon_files.dto import (
     HackathonDocumentDto,
     HackathonDocumentWithLinkDto,
 )
-from app.controllers.hackathon_files.exceptions import (
+from app.services.hackathon_files.exceptions import (
     HackathonFileNotFoundException,
     HackathonFileTypeRestrictedException,
 )
 
 
-class IHackathonFilesController(Protocol):
+class IHackathonFilesService(Protocol):
     bucket: str
-    s3_controller: IS3Controller
+    s3_controller: IS3Service
 
     async def upload_allowed_file(
         self, hackathon_id: int, file: io.BytesIO, filename: str
@@ -40,8 +40,8 @@ class IHackathonFilesController(Protocol):
     async def delete_file(self, document_id: int) -> HackathonDocumentDto: ...
 
 
-class HackathonFilesController(IHackathonFilesController):
-    def __init__(self, bucket: str, s3_controller: IS3Controller):
+class HackathonFilesService(IHackathonFilesService):
+    def __init__(self, bucket: str, s3_controller: IS3Service):
         self.bucket = bucket
         self.s3_controller = s3_controller
 
@@ -163,6 +163,6 @@ class HackathonFilesController(IHackathonFilesController):
 
 @lru_cache
 def get_hackathon_files_controller(
-    s3_controller: IS3Controller = Depends(get_s3_controller),
-) -> HackathonFilesController:
-    return HackathonFilesController("hackathons", s3_controller)
+    s3_controller: IS3Service = Depends(get_s3_controller),
+) -> HackathonFilesService:
+    return HackathonFilesService("hackathons", s3_controller)

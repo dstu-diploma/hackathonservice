@@ -1,7 +1,7 @@
-from app.controllers.hackathon.dto import FullHackathonDto
-from app.controllers.hackathon_files.dto import HackathonDocumentWithLinkDto
-from app.controllers.judge.dto import JudgeDto
-from app.controllers.team.dto import HackathonTeamDto
+from app.services.hackathon.dto import FullHackathonDto
+from app.services.hackathon_files.dto import HackathonDocumentWithLinkDto
+from app.services.judge.dto import JudgeDto
+from app.services.team.dto import HackathonTeamDto
 
 
 class DetailedHackathonDto(FullHackathonDto):

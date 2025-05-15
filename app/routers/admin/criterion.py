@@ -1,12 +1,12 @@
-from app.controllers.hackathon.dto import CriterionDto
+from app.services.hackathon.dto import CriterionDto
 from app.routers.admin.dto import CreateCriterionDto
-from app.controllers.auth import PermittedAction
+from app.services.auth import PermittedAction
 from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends
 
-from app.controllers.hackathon import (
+from app.services.hackathon import (
     get_hackathon_controller,
-    HackathonController,
+    HackathonService,
 )
 
 
@@ -21,9 +21,7 @@ router = APIRouter(tags=["Управление критериями"], prefix="/
 async def get_hackathon_criteria(
     hackathon_id: int,
     _=Depends(PermittedAction(Permissions.ReadAdminHackathonCriteria)),
-    hackathon_controller: HackathonController = Depends(
-        get_hackathon_controller
-    ),
+    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
 ):
     """
     Возвращает список всех критериев хакатона.
@@ -40,9 +38,7 @@ async def create_new_criterion(
     hackathon_id: int,
     dto: CreateCriterionDto,
     _=Depends(PermittedAction(Permissions.CreateCriterion)),
-    hackathon_controller: HackathonController = Depends(
-        get_hackathon_controller
-    ),
+    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
 ):
     """
     Возвращает список всех критериев хакатона.
@@ -62,9 +58,7 @@ async def update_existing_criterion(
     criterion_id: int,
     dto: CreateCriterionDto,
     _=Depends(PermittedAction(Permissions.UpdateCriterion)),
-    hackathon_controller: HackathonController = Depends(
-        get_hackathon_controller
-    ),
+    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
 ):
     """
     Обновляет существующий критерий.
@@ -83,9 +77,7 @@ async def delete_criterion(
     hackathon_id: int,
     criterion_id: int,
     _=Depends(PermittedAction(Permissions.DeleteCriterion)),
-    hackathon_controller: HackathonController = Depends(
-        get_hackathon_controller
-    ),
+    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
 ):
     """
     Удаляет существующий критерий.
