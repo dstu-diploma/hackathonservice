@@ -1,6 +1,6 @@
+from app.services.hackathon.dto import CriterionDto, HackathonDto, TeamScoreDto
 from app.services.hackathon_teams.interface import IHackathonTeamsService
 from app.services.hackathon_files.interface import IHackathonFilesService
-from app.services.hackathon.dto import CriterionDto, HackathonDto, TeamScoreDto
 from app.services.hackathon.interface import IHackathonService
 from app.ports.teamservice.dto import HackathonTeamDto
 from app.services.judge.interface import IJudgeService
