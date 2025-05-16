@@ -1,10 +1,10 @@
-from app.services.judge import IJudgeService, get_judge_controller
+from app.services.judge.interface import IJudgeService
+from app.routers.admin.dto import JudgeUserIdDto
+from app.dependencies import get_judge_service
 from app.services.auth import PermittedAction
 from app.services.judge.dto import JudgeDto
 from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends
-
-from app.routers.admin.dto import JudgeUserIdDto
 
 router = APIRouter(tags=["Управление жюри"], prefix="/judge")
 
@@ -15,12 +15,12 @@ router = APIRouter(tags=["Управление жюри"], prefix="/judge")
 async def get_judges(
     hackathon_id: int,
     _=Depends(PermittedAction(Permissions.GetJudges)),
-    judge_controller: IJudgeService = Depends(get_judge_controller),
+    judge_service: IJudgeService = Depends(get_judge_service),
 ):
     """
     Возвращает список всех жюри для данного хакатона.
     """
-    return await judge_controller.get_judges(hackathon_id)
+    return await judge_service.get_judges(hackathon_id)
 
 
 @router.post(
@@ -30,12 +30,12 @@ async def add_judge(
     hackathon_id: int,
     dto: JudgeUserIdDto,
     _=Depends(PermittedAction(Permissions.CreateJudge)),
-    judge_controller: IJudgeService = Depends(get_judge_controller),
+    judge_service: IJudgeService = Depends(get_judge_service),
 ):
     """
     Добавляет нового жюри на хакатон. Менять состав судей можно только до начала даты оценивания.
     """
-    return await judge_controller.add_judge(hackathon_id, dto.judge_user_id)
+    return await judge_service.add_judge(hackathon_id, dto.judge_user_id)
 
 
 @router.delete(
@@ -45,9 +45,9 @@ async def delete_judge(
     hackathon_id: int,
     dto: JudgeUserIdDto,
     _=Depends(PermittedAction(Permissions.DeleteJudge)),
-    judge_controller: IJudgeService = Depends(get_judge_controller),
+    judge_service: IJudgeService = Depends(get_judge_service),
 ):
     """
     Удаляет жюри из списка для данного хакатона. Менять состав судей можно только до начала даты оценивания.
     """
-    return await judge_controller.delete_judge(hackathon_id, dto.judge_user_id)
+    return await judge_service.delete_judge(hackathon_id, dto.judge_user_id)

@@ -1,13 +1,10 @@
-from app.services.hackathon.dto import CriterionDto
+from app.services.hackathon.interface import IHackathonService
 from app.routers.admin.dto import CreateCriterionDto
+from app.services.hackathon.dto import CriterionDto
+from app.dependencies import get_hackathon_service
 from app.services.auth import PermittedAction
 from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends
-
-from app.services.hackathon import (
-    get_hackathon_controller,
-    HackathonService,
-)
 
 
 router = APIRouter(tags=["Управление критериями"], prefix="/criterion")
@@ -21,12 +18,12 @@ router = APIRouter(tags=["Управление критериями"], prefix="/
 async def get_hackathon_criteria(
     hackathon_id: int,
     _=Depends(PermittedAction(Permissions.ReadAdminHackathonCriteria)),
-    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
+    hackathon_service: IHackathonService = Depends(get_hackathon_service),
 ):
     """
     Возвращает список всех критериев хакатона.
     """
-    return await hackathon_controller.get_criteria(hackathon_id)
+    return await hackathon_service.get_criteria(hackathon_id)
 
 
 @router.post(
@@ -38,12 +35,12 @@ async def create_new_criterion(
     hackathon_id: int,
     dto: CreateCriterionDto,
     _=Depends(PermittedAction(Permissions.CreateCriterion)),
-    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
+    hackathon_service: IHackathonService = Depends(get_hackathon_service),
 ):
     """
     Возвращает список всех критериев хакатона.
     """
-    return await hackathon_controller.add_criterion(
+    return await hackathon_service.add_criterion(
         hackathon_id, dto.name, dto.weight
     )
 
@@ -58,12 +55,12 @@ async def update_existing_criterion(
     criterion_id: int,
     dto: CreateCriterionDto,
     _=Depends(PermittedAction(Permissions.UpdateCriterion)),
-    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
+    hackathon_service: IHackathonService = Depends(get_hackathon_service),
 ):
     """
     Обновляет существующий критерий.
     """
-    return await hackathon_controller.update_criterion(
+    return await hackathon_service.update_criterion(
         hackathon_id, criterion_id, dto.name, dto.weight
     )
 
@@ -77,11 +74,9 @@ async def delete_criterion(
     hackathon_id: int,
     criterion_id: int,
     _=Depends(PermittedAction(Permissions.DeleteCriterion)),
-    hackathon_controller: HackathonService = Depends(get_hackathon_controller),
+    hackathon_service: IHackathonService = Depends(get_hackathon_service),
 ):
     """
     Удаляет существующий критерий.
     """
-    return await hackathon_controller.delete_criterion(
-        hackathon_id, criterion_id
-    )
+    return await hackathon_service.delete_criterion(hackathon_id, criterion_id)

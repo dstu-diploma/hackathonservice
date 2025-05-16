@@ -1,11 +1,9 @@
-from app.services.s3 import IS3Service, get_s3_controller
 from fastapi.responses import StreamingResponse
 from fastapi import APIRouter, Depends
 
-from app.services.hackathon_files import (
-    IHackathonFilesService,
-    get_hackathon_files_controller,
-)
+from app.dependencies import get_hackathon_files_service, get_storage
+from app.ports.storage import IStoragePort
+from app.services.hackathon_files.interface import IHackathonFilesService
 
 router = APIRouter(prefix="/download", include_in_schema=False)
 
@@ -14,13 +12,13 @@ router = APIRouter(prefix="/download", include_in_schema=False)
 async def download_hack_document(
     document_id: int,
     filename: str,
-    hackathon_files_controller: IHackathonFilesService = Depends(
-        get_hackathon_files_controller
+    hackathon_files_service: IHackathonFilesService = Depends(
+        get_hackathon_files_service
     ),
-    s3_controller: IS3Service = Depends(get_s3_controller),
+    s3_service: IStoragePort = Depends(get_storage),
 ):
-    s3_key = await hackathon_files_controller.get_doc_s3_key(document_id)
-    s3_obj = s3_controller.get_object("hackathons", s3_key)
+    s3_key = await hackathon_files_service.get_doc_s3_key(document_id)
+    s3_obj = s3_service.get_object("hackathons", s3_key)
 
     return StreamingResponse(
         s3_obj["Body"],

@@ -24,6 +24,16 @@ class S3StorageAdapter(IStoragePort):
             ExtraArgs={"ContentType": "image/jpeg"},
         )
 
+    def upload_file(
+        self, buf: io.BytesIO, bucket: str, key: str, content_type: str
+    ) -> None:
+        self.__client.upload_fileobj(
+            buf,
+            bucket,
+            key,
+            ExtraArgs={"ContentType": content_type},
+        )
+
     def delete_object(self, bucket: str, key: str) -> None:
         self.__client.delete_object(Bucket=bucket, Key=key)
 
@@ -33,6 +43,9 @@ class S3StorageAdapter(IStoragePort):
             return True
         except self.__client.exceptions.ClientError:
             return False
+
+    def get_object(self, bucket: str, key: str) -> dict:
+        return self.__client.get_object(Bucket=bucket, Key=key)
 
     def ensure_bucket(self, bucket: str) -> None:
         if self.__client.bucket_exists(bucket):

@@ -1,15 +1,13 @@
-from app.services.auth.dto import AccessJWTPayloadDto
 from app.services.hackathon_teams.dto import HackathonTeamScoreDto
-from app.services.team.dto import HackathonTeamWithMatesDto
+from app.ports.teamservice.dto import HackathonTeamWithMatesDto
+from app.dependencies import get_hackathon_teams_service
+from app.services.auth.dto import AccessJWTPayloadDto
 from app.services.auth import PermittedAction
 from app.acl.permissions import Permissions
 from fastapi import APIRouter, Depends
 
-from app.services.hackathon_teams import (
-    get_hackathon_teams_controller,
-    IHackathonTeamsService,
-)
 from app.routers.admin.dto import CriterionScoreDto
+from app.services.hackathon_teams.interface import IHackathonTeamsService
 
 router = APIRouter(tags=["Управление командами"], prefix="/teams")
 
@@ -23,14 +21,14 @@ async def get_hackathon_team_data(
     hackathon_id: int,
     team_id: int,
     _=Depends(PermittedAction(Permissions.ReadAdminHackathonTeamMates)),
-    hackathon_teams_controller: IHackathonTeamsService = Depends(
-        get_hackathon_teams_controller
+    hackathon_teams_service: IHackathonTeamsService = Depends(
+        get_hackathon_teams_service
     ),
 ):
     """
     Возвращает полную информацию о команде-участнике хакатона.
     """
-    return await hackathon_teams_controller.get_team_info(hackathon_id, team_id)
+    return await hackathon_teams_service.get_team_info(hackathon_id, team_id)
 
 
 @router.get(
@@ -42,15 +40,15 @@ async def get_hackathon_team_score(
     hackathon_id: int,
     team_id: int,
     _=Depends(PermittedAction(Permissions.ReadTeamScores)),
-    hackathon_teams_controller: IHackathonTeamsService = Depends(
-        get_hackathon_teams_controller
+    hackathon_teams_service: IHackathonTeamsService = Depends(
+        get_hackathon_teams_service
     ),
 ):
     """
     Возвращает все оценки команды от всех членов жюри, по каждому критериев.
     Не гарантирует, что здесь присутствуют все жюри или все критерии (жюри может не дать оценку по какому-либо хакатону).
     """
-    return await hackathon_teams_controller.get_all_team_scores(team_id)
+    return await hackathon_teams_service.get_all_team_scores(team_id)
 
 
 @router.post(
@@ -65,14 +63,14 @@ async def set_hackathon_team_score(
     judge_user_dto: AccessJWTPayloadDto = Depends(
         PermittedAction(Permissions.CreateTeamScore)
     ),
-    hackathon_teams_controller: IHackathonTeamsService = Depends(
-        get_hackathon_teams_controller
+    hackathon_teams_service: IHackathonTeamsService = Depends(
+        get_hackathon_teams_service
     ),
 ):
     """
     Устанавливает оценку от лица жюри (текущего пользователя) по заданному критерию.
     """
-    return await hackathon_teams_controller.set_score(
+    return await hackathon_teams_service.set_score(
         hackathon_id,
         team_id,
         judge_user_dto.user_id,
