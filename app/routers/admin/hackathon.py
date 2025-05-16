@@ -1,15 +1,12 @@
-from app.dependencies import (
-    get_hackathon_files_service,
-    get_hackathon_service,
-    get_hackathon_teams_service,
-)
-from app.ports.teamservice.dto import HackathonTeamDto
+from app.services.hackathon_teams.interface import IHackathonTeamsService
 from app.services.hackathon_files.interface import IHackathonFilesService
 from app.routers.admin.dto import CreateHackathonDto, HackathonFileIdDto
 from app.services.hackathon.interface import IHackathonService
 from fastapi import APIRouter, Depends, Request, UploadFile
+from app.ports.teamservice.dto import HackathonTeamDto
 from app.services.auth import PermittedAction
 from app.acl.permissions import Permissions
+from app.config import Settings
 from os import environ
 from uuid import uuid4
 import io
@@ -24,10 +21,15 @@ from app.services.hackathon_files.dto import (
     HackathonDocumentWithLinkDto,
     HackathonDocumentDto,
 )
-from app.services.hackathon_teams.interface import IHackathonTeamsService
+
+from app.dependencies import (
+    get_hackathon_files_service,
+    get_hackathon_service,
+    get_hackathon_teams_service,
+)
+
 
 router = APIRouter(tags=["Управление хакатонами"], prefix="/hackathon")
-PUBLIC_API_URL = environ.get("PUBLIC_API_URL", None)
 
 
 @router.post(
@@ -140,7 +142,8 @@ async def get_hackathon_files(
     Возвращает список всех загруженных файлов (приложений)
     """
     files = await hackathon_files_service.get_files(
-        hackathon_id, PUBLIC_API_URL or str(request.base_url).rstrip("/")
+        hackathon_id,
+        Settings.PUBLIC_API_URL or str(request.base_url).rstrip("/"),
     )
     return files
 

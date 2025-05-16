@@ -1,8 +1,10 @@
+import botocore.exceptions
 from fastapi.responses import StreamingResponse
 from fastapi import APIRouter, Depends
 
 from app.dependencies import get_hackathon_files_service, get_storage
 from app.ports.storage import IStoragePort
+from app.routers.proxy.exceptions import HackathonTeamSubmissionAccessError
 from app.services.hackathon_files.interface import IHackathonFilesService
 
 router = APIRouter(prefix="/download", include_in_schema=False)
@@ -18,10 +20,15 @@ async def download_hack_document(
     s3_service: IStoragePort = Depends(get_storage),
 ):
     s3_key = await hackathon_files_service.get_doc_s3_key(document_id)
-    s3_obj = s3_service.get_object("hackathons", s3_key)
+    try:
+        s3_obj = s3_service.get_object("hackathons", s3_key)
 
-    return StreamingResponse(
-        s3_obj["Body"],
-        media_type=s3_obj["ContentType"],
-        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
-    )
+        return StreamingResponse(
+            s3_obj["Body"],
+            media_type=s3_obj["ContentType"],
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            },
+        )
+    except botocore.exceptions.ClientError:
+        raise HackathonTeamSubmissionAccessError

@@ -4,6 +4,7 @@ from app.ports.storage import IStoragePort
 from urllib.parse import quote
 from uuid import uuid4
 from . import utils
+import urllib.parse
 import mimetypes
 import io
 
@@ -126,7 +127,9 @@ class HackathonFilesService(IHackathonFilesService):
         doc = await self._get_document(document_id)
 
         safe_filename = quote(filename)
-        redirect_url = f"{base_url}/download/{doc.id}/{safe_filename}"
+        redirect_url = urllib.parse.urljoin(
+            base_url, f"/download/hack/{doc.id}/{safe_filename}"
+        )
         return redirect_url
 
     async def delete_file(self, document_id: int) -> HackathonDocumentDto:
