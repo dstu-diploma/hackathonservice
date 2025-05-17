@@ -1,6 +1,6 @@
 from app.services.hackathon_files.interface import IHackathonFilesService
-from app.services.hackathon_files.service import HackathonFilesService
 from app.services.hackathon_teams.interface import IHackathonTeamsService
+from app.services.hackathon_files.service import HackathonFilesService
 from app.services.hackathon_teams.service import HackathonTeamsService
 from app.services.hackathon.interface import IHackathonService
 from app.services.hackathon.service import HackathonService
@@ -59,11 +59,13 @@ def get_hackathon_teams_service(
     hack_service: IHackathonService = Depends(get_hackathon_service),
     team_service: ITeamServicePort = Depends(get_team_service),
     judge_service: IJudgeService = Depends(get_judge_service),
+    user_service: IUserServicePort = Depends(get_user_service),
 ) -> IHackathonTeamsService:
     return HackathonTeamsService(
         hack_service,
         team_service,
         judge_service,
+        user_service,
     )
 
 

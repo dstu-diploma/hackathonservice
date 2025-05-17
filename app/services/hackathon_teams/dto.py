@@ -7,8 +7,10 @@ from app.models.hackathon import HackathonTeamScore
 class HackathonTeamScoreDto(BaseModel):
     id: int
     team_id: int
+    team_name: str | None = None
     criterion_id: int
     judge_user_id: int
+    judge_user_name: str | None = None
     score: int
 
     @staticmethod

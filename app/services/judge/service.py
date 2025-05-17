@@ -4,6 +4,7 @@ from app.services.judge.interface import IJudgeService
 from app.models.hackathon import HackathonJudgeModel
 from app.ports.userservice import IUserServicePort
 from app.services.judge.dto import JudgeDto
+import app.util.dto_utils as dto_utils
 
 
 from app.services.judge.exceptions import (
@@ -40,7 +41,14 @@ class JudgeService(IJudgeService):
         self, hackathon_id: int, judge_user_id: int
     ) -> JudgeDto:
         judge = await self._get_judge(hackathon_id, judge_user_id)
-        return JudgeDto.from_tortoise(judge)
+
+        dto = JudgeDto.from_tortoise(judge)
+        user_info = await self.user_service.try_get_user_info(judge.user_id)
+
+        if user_info:
+            dto.user_name = user_info.formatted_name
+
+        return dto
 
     async def _can_manage(self, hackathon_id: int) -> bool:
         return (
@@ -55,7 +63,8 @@ class JudgeService(IJudgeService):
         if not await self._can_manage(hackathon_id):
             raise HackathonJudgeCantManageDateExpiredException()
 
-        if not await self.user_service.get_user_exists(judge_user_id):
+        user_info = await self.user_service.try_get_user_info(judge_user_id)
+        if user_info is None:
             raise UserDoesNotExistException()
 
         if await HackathonJudgeModel.get_or_none(
@@ -67,11 +76,23 @@ class JudgeService(IJudgeService):
             hackathon_id=hackathon_id, user_id=judge_user_id
         )
 
-        return JudgeDto.from_tortoise(judge)
+        dto = JudgeDto.from_tortoise(judge)
+        dto.user_name = user_info.formatted_name
+
+        return dto
 
     async def get_judges(self, hackathon_id: int) -> list[JudgeDto]:
         judges = await HackathonJudgeModel.filter(hackathon_id=hackathon_id)
-        return [JudgeDto.from_tortoise(judge) for judge in judges]
+        dtos = [JudgeDto.from_tortoise(judge) for judge in judges]
+        names = self.user_service.get_name_map(
+            await self.user_service.try_get_user_info_many(
+                dto_utils.export_int_fields(dtos, "user_id")
+            )
+        )
+
+        return dto_utils.inject_mapping(
+            dtos, names, "user_id", "user_name", strict=True
+        )
 
     async def delete_judge(
         self, hackathon_id: int, judge_user_id: int

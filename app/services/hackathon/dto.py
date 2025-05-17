@@ -81,4 +81,5 @@ class FullHackathonDto(HackathonDto):
 
 class TeamScoreDto(BaseModel):
     team_id: int
+    team_name: str | None = None
     score: float

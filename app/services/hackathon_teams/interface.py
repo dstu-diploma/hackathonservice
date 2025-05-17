@@ -3,6 +3,7 @@ from app.services.hackathon.interface import IHackathonService
 from app.services.judge.interface import IJudgeService
 from app.services.hackathon.dto import TeamScoreDto
 from app.ports.teamservice import ITeamServicePort
+from app.ports.userservice import IUserServicePort
 from typing import Protocol
 
 from app.ports.teamservice.dto import (
@@ -15,6 +16,7 @@ class IHackathonTeamsService(Protocol):
     hackathon_service: IHackathonService
     team_service: ITeamServicePort
     judge_service: IJudgeService
+    user_service: IUserServicePort
 
     async def get_by_hackathon(
         self, hackathon_id: int
