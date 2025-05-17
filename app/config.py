@@ -19,7 +19,7 @@ class HackathonServiceSettings(BaseSettings):
     S3_SECRET_KEY: str
 
     JWT_SECRET: str = "dstu"
-    ROOT_PATH: str = "/"
+    ROOT_PATH: str = ""
     INTERNAL_API_KEY: str = "apikey"
     PUBLIC_API_URL: str = "http://localhost/hackathon/"
 
