@@ -45,7 +45,9 @@ class TeamServiceAdapter(ITeamServicePort):
         self, hackathon_id: int
     ) -> list[HackathonTeamDto]:
         data = await self._do_get(
-            f"{self.base_url}/hackathon/{hackathon_id}/teams"
+            urllib.parse.urljoin(
+                self.base_url, f"hackathon/{hackathon_id}/teams"
+            )
         )
         return [HackathonTeamDto(**team) for team in data]
 
@@ -53,6 +55,8 @@ class TeamServiceAdapter(ITeamServicePort):
         self, hackathon_id: int, team_id: int
     ) -> HackathonTeamWithMatesDto:
         data = await self._do_get(
-            f"{self.base_url}/hackathon/{hackathon_id}/teams/{team_id}"
+            urllib.parse.urljoin(
+                self.base_url, f"hackathon/{hackathon_id}/teams/{team_id}"
+            )
         )
         return HackathonTeamWithMatesDto(**data)
