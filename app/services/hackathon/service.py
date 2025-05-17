@@ -88,6 +88,12 @@ class HackathonService(IHackathonService):
             HackathonDto.from_tortoise(hackathon) for hackathon in hackathons
         ]
 
+    async def get_many(self, hackathon_ids: list[int]) -> list[HackathonDto]:
+        hackathons = await HackathonModel.filter(id__in=hackathon_ids)
+        return [
+            HackathonDto.from_tortoise(hackathon) for hackathon in hackathons
+        ]
+
     async def _get_by_id(self, hackathon_id: int) -> HackathonModel:
         hackathon = await HackathonModel.get_or_none(id=hackathon_id)
         if hackathon is None:
