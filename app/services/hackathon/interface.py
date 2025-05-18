@@ -1,3 +1,4 @@
+from app.ports.event_publisher import IEventPublisherPort
 from datetime import datetime
 from typing import Protocol
 
@@ -16,6 +17,8 @@ from app.services.hackathon.dto import (
 
 
 class IHackathonService(Protocol):
+    event_publsher: IEventPublisherPort
+
     async def create(
         self,
         name: str,

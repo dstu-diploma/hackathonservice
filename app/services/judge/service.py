@@ -1,30 +1,54 @@
 from app.ports.userservice.exceptions import UserDoesNotExistException
 from app.services.hackathon.interface import IHackathonService
+from app.ports.event_consumer import IEventConsumerPort
 from app.services.judge.interface import IJudgeService
 from app.models.hackathon import HackathonJudgeModel
 from app.ports.userservice import IUserServicePort
 from app.services.judge.dto import JudgeDto
 import app.util.dto_utils as dto_utils
+from app.events.emitter import Emitter
+from app.events.emitter import Events
 
 
 from app.services.judge.exceptions import (
-    HackathonJudgeAlreadyExistsException,
     HackathonJudgeCantManageDateExpiredException,
+    HackathonJudgeAlreadyExistsException,
     HackathonJudgeDoesNotExistsException,
 )
 
 
 class JudgeService(IJudgeService):
-    user_service: IUserServicePort
-    hackathon_service: IHackathonService
-
     def __init__(
         self,
         user_service: IUserServicePort,
         hackathon_service: IHackathonService,
+        event_consumer: IEventConsumerPort,
     ):
         self.user_service = user_service
         self.hackathon_service = hackathon_service
+        self.event_consumer = event_consumer
+
+        self._init_events()
+
+    def _init_events(self):
+        async def on_user_deleted(payload: dict):
+            data: dict | None = payload.get("data", None)
+            if data is None:
+                return
+
+            user_id = data.get("id")
+            if user_id is None:
+                return
+
+            await HackathonJudgeModel.filter(user_id=user_id).delete()
+
+        async def on_user_banned(payload: dict):
+            is_banned = payload["data"]["is_banned"]
+            if is_banned:
+                return await on_user_deleted(payload)
+
+        Emitter.on(Events.UserDeleted, on_user_deleted)
+        Emitter.on(Events.UserBanned, on_user_banned)
 
     async def _get_judge(
         self, hackathon_id: int, judge_user_id: int
