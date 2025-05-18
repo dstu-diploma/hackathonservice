@@ -1,5 +1,7 @@
 from tortoise.exceptions import ValidationError, IntegrityError
 from app.services.hackathon.interface import IHackathonService
+from app.ports.event_publisher import IEventPublisherPort
+from app.events.emitter import Events
 from collections import defaultdict
 from tortoise.functions import Sum
 from datetime import datetime
@@ -36,8 +38,8 @@ from app.models.hackathon import (
 
 
 class HackathonService(IHackathonService):
-    def __init__(self):
-        pass
+    def __init__(self, event_publsher: IEventPublisherPort):
+        self.event_publsher = event_publsher
 
     async def create(
         self,
@@ -108,6 +110,9 @@ class HackathonService(IHackathonService):
     async def delete(self, hackathon_id: int) -> None:
         hackathon = await self._get_by_id(hackathon_id)
         await hackathon.delete()
+        await self.event_publsher.publish(
+            Events.HackathonDeleted, HackathonDto.from_tortoise(hackathon)
+        )
 
     async def can_edit_team_registry(
         self, hackathon_id: int
