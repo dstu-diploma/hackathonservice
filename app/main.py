@@ -1,5 +1,5 @@
+from app.dependencies import get_event_consumer, get_event_publisher
 from fastapi.middleware.cors import CORSMiddleware
-from app.dependencies import get_event_consumer
 from contextlib import asynccontextmanager
 from app.events import register_events
 from app.routers import main_router
@@ -11,7 +11,10 @@ from app.db import init_db
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     consumer = get_event_consumer()
+    publisher = get_event_publisher()
+
     await consumer.connect()
+    await publisher.connect()
 
     task = await register_events(consumer)
 
@@ -25,6 +28,7 @@ app = FastAPI(
     title="DSTU Diploma | HackathonService",
     docs_url="/swagger",
     root_path=Settings.ROOT_PATH,
+    lifespan=lifespan,
 )
 init_db(app)
 
