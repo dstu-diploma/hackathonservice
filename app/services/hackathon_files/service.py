@@ -128,7 +128,7 @@ class HackathonFilesService(IHackathonFilesService):
 
         safe_filename = quote(filename)
         redirect_url = urllib.parse.urljoin(
-            base_url, f"/download/hack/{doc.id}/{safe_filename}"
+            base_url, f"download/hack/{doc.id}/{safe_filename}"
         )
         return redirect_url
 
