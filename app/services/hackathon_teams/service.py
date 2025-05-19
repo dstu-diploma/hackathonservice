@@ -97,17 +97,16 @@ class HackathonTeamsService(IHackathonTeamsService):
         hack_team = await self.get_team_info(hackathon_id, team_id)
         criterion = await self.hackathon_service.get_criterion(criterion_id)
         judge = await self.judge_service.get_judge(hackathon_id, judge_user_id)
-
         try:
             record, _ = await HackathonTeamScore.update_or_create(
                 defaults={
-                    "score": score,
+                    "team_id": hack_team.id,
+                    "criterion_id": criterion.id,
+                    "judge_id": judge.id,
                 },
-                team_id=hack_team.id,
-                criterion_id=criterion.id,
-                judge_id=judge.id,
+                score=score,
             )
-            dto = HackathonTeamScoreDto.from_tortoise(record)
+            dto = HackathonTeamScoreDto.from_tortoise(record, judge.user_id)
             dto.judge_user_name = judge.user_name
             dto.team_name = hack_team.name
             return dto
@@ -117,11 +116,16 @@ class HackathonTeamsService(IHackathonTeamsService):
     async def get_all_team_scores(
         self, team_id: int
     ) -> list[HackathonTeamScoreDto]:
-        scores = await HackathonTeamScore.filter(team_id=team_id).order_by(
-            "judge_id", "criterion_id"
+        scores = (
+            await HackathonTeamScore.filter(team_id=team_id)
+            .order_by("judge_id", "criterion_id")
+            .prefetch_related("judge")
         )
 
-        dtos = [HackathonTeamScoreDto.from_tortoise(score) for score in scores]
+        dtos = [
+            HackathonTeamScoreDto.from_tortoise(score, score.judge.user_id)
+            for score in scores
+        ]
         user_names = self.user_service.get_name_map(
             await self.user_service.try_get_user_info_many(
                 dto_utils.export_int_fields(dtos, "judge_user_id")
