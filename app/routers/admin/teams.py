@@ -82,13 +82,13 @@ async def get_hackathon_team_score_by_user(
 
 @router.put(
     "/{hackathon_id}/{team_id}/score",
-    response_model=HackathonTeamScoreDto,
+    response_model=list[HackathonTeamScoreDto],
     summary="Оценка команды",
 )
 async def set_hackathon_team_score(
     hackathon_id: int,
     team_id: int,
-    dto: CriterionScoreDto,
+    dtos: list[CriterionScoreDto],
     judge_user_dto: AccessJWTPayloadDto = Depends(
         PermittedAction(Permissions.CreateTeamScore)
     ),
@@ -97,12 +97,19 @@ async def set_hackathon_team_score(
     ),
 ):
     """
-    Устанавливает оценку от лица жюри (текущего пользователя) по заданному критерию.
+    Устанавливает оценку от лица жюри (текущего пользователя) по заданным критериям.
     """
-    return await hackathon_teams_service.set_score(
-        hackathon_id,
-        team_id,
-        judge_user_dto.user_id,
-        dto.criterion_id,
-        dto.score,
-    )
+    scores: list[HackathonTeamScoreDto] = []
+
+    for dto in dtos:
+        scores.append(
+            await hackathon_teams_service.set_score(
+                hackathon_id,
+                team_id,
+                judge_user_dto.user_id,
+                dto.criterion_id,
+                dto.score,
+            )
+        )
+
+    return scores
