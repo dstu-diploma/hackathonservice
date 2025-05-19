@@ -1,7 +1,5 @@
-from datetime import datetime
-from pydantic import BaseModel
-
 from app.models.hackathon import HackathonTeamScore
+from pydantic import BaseModel
 
 
 class HackathonTeamScoreDto(BaseModel):
@@ -14,11 +12,11 @@ class HackathonTeamScoreDto(BaseModel):
     score: int
 
     @staticmethod
-    def from_tortoise(score: HackathonTeamScore):
+    def from_tortoise(score: HackathonTeamScore, judge_user_id: int):
         return HackathonTeamScoreDto(
             id=score.id,
             team_id=score.team_id,
             criterion_id=score.criterion_id,  # type: ignore[attr-defined]
-            judge_user_id=score.judge_id,  # type: ignore[attr-defined]
+            judge_user_id=judge_user_id,
             score=score.score,
         )

@@ -1,3 +1,4 @@
+from typing import cast
 from app.services.hackathon_teams.dto import HackathonTeamScoreDto
 from app.ports.teamservice.dto import HackathonTeamWithMatesDto
 from app.dependencies import get_hackathon_teams_service
@@ -49,6 +50,34 @@ async def get_hackathon_team_score(
     Не гарантирует, что здесь присутствуют все жюри или все критерии (жюри может не дать оценку по какому-либо хакатону).
     """
     return await hackathon_teams_service.get_all_team_scores(team_id)
+
+
+@router.get(
+    "/{hackathon_id}/{team_id}/score/my",
+    response_model=list[HackathonTeamScoreDto],
+    summary="Получение моего списка оценок",
+)
+async def get_hackathon_team_score_by_user(
+    hackathon_id: int,
+    team_id: int,
+    judge_user_dto: AccessJWTPayloadDto = Depends(
+        PermittedAction(Permissions.ReadTeamScores)
+    ),
+    hackathon_teams_service: IHackathonTeamsService = Depends(
+        get_hackathon_teams_service
+    ),
+):
+    """
+    Возвращает все оценки команды от текущего пользователя по каждому из критериев.
+    """
+    scores = await hackathon_teams_service.get_all_team_scores(team_id)
+    return list(
+        filter(
+            lambda score: cast(HackathonTeamScoreDto, score).judge_user_id
+            == judge_user_dto.user_id,
+            scores,
+        )
+    )
 
 
 @router.put(
