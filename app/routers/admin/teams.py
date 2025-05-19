@@ -51,7 +51,7 @@ async def get_hackathon_team_score(
     return await hackathon_teams_service.get_all_team_scores(team_id)
 
 
-@router.post(
+@router.put(
     "/{hackathon_id}/{team_id}/score",
     response_model=HackathonTeamScoreDto,
     summary="Оценка команды",

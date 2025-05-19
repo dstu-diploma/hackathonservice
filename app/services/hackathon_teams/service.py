@@ -99,11 +99,13 @@ class HackathonTeamsService(IHackathonTeamsService):
         judge = await self.judge_service.get_judge(hackathon_id, judge_user_id)
 
         try:
-            record = await HackathonTeamScore.create(
+            record, _ = await HackathonTeamScore.update_or_create(
+                defaults={
+                    "score": score,
+                },
                 team_id=hack_team.id,
                 criterion_id=criterion.id,
                 judge_id=judge.id,
-                score=score,
             )
             dto = HackathonTeamScoreDto.from_tortoise(record)
             dto.judge_user_name = judge.user_name
