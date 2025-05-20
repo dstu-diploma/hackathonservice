@@ -4,6 +4,7 @@ from app.dependencies import get_hackathon_files_service, get_storage
 from app.ports.storage import IStoragePort
 from fastapi.responses import StreamingResponse
 from fastapi import APIRouter, Depends
+from urllib.parse import quote
 import botocore.exceptions
 
 router = APIRouter(prefix="/download", include_in_schema=False)
@@ -26,7 +27,7 @@ async def download_hack_document(
             s3_obj["Body"],
             media_type=s3_obj["ContentType"],
             headers={
-                "Content-Disposition": f'attachment; filename="{filename}"'
+                "Content-Disposition": f'attachment; filename="{quote(filename)}"'
             },
         )
     except botocore.exceptions.ClientError:
