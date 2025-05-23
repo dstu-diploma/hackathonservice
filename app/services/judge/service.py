@@ -71,6 +71,7 @@ class JudgeService(IJudgeService):
 
         if user_info:
             dto.user_name = user_info.formatted_name
+            dto.user_uploads = user_info.uploads
 
         return dto
 
@@ -102,21 +103,29 @@ class JudgeService(IJudgeService):
 
         dto = JudgeDto.from_tortoise(judge)
         dto.user_name = user_info.formatted_name
+        dto.user_uploads = user_info.uploads
 
         return dto
 
     async def get_judges(self, hackathon_id: int) -> list[JudgeDto]:
         judges = await HackathonJudgeModel.filter(hackathon_id=hackathon_id)
         dtos = [JudgeDto.from_tortoise(judge) for judge in judges]
-        names = self.user_service.get_name_map(
-            await self.user_service.try_get_user_info_many(
-                dto_utils.export_int_fields(dtos, "user_id")
-            )
+        external_user_info = await self.user_service.try_get_user_info_many(
+            dto_utils.export_int_fields(dtos, "user_id")
         )
 
-        return dto_utils.inject_mapping(
+        names = self.user_service.get_name_map(external_user_info)
+        user_map = dict((user.id, user) for user in external_user_info)
+
+        dtos = dto_utils.inject_mapping(
             dtos, names, "user_id", "user_name", strict=True
         )
+
+        for dto in dtos:
+            if dto.user_id in user_map:
+                dto.user_uploads = user_map[dto.user_id].uploads
+
+        return dtos
 
     async def delete_judge(
         self, hackathon_id: int, judge_user_id: int
