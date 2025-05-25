@@ -1,11 +1,13 @@
 from app.services.hackathon.dto import CriterionDto, HackathonDto, TeamScoreDto
 from app.services.hackathon_teams.interface import IHackathonTeamsService
 from app.services.hackathon_files.interface import IHackathonFilesService
+from app.services.hackathon_files.dto import HackathonDocumentWithLinkDto
 from app.services.hackathon.interface import IHackathonService
 from app.ports.teamservice.dto import HackathonTeamDto
 from app.services.judge.interface import IJudgeService
 from app.routers.root.dto import DetailedHackathonDto
 from fastapi import APIRouter, Depends, Request
+from app.services.judge.dto import JudgeDto
 from app.config import Settings
 
 from app.dependencies import (
@@ -14,7 +16,6 @@ from app.dependencies import (
     get_hackathon_service,
     get_judge_service,
 )
-from app.services.judge.dto import JudgeDto
 
 router = APIRouter(tags=["Основное"], prefix="")
 
@@ -130,3 +131,24 @@ async def get_judges(
     Возвращает список судей хакатона.
     """
     return await judges_service.get_judges(hackathon_id)
+
+
+@router.get(
+    "/{hackathon_id}/uploads",
+    response_model=list[HackathonDocumentWithLinkDto],
+    summary="Приложения к хакатону",
+)
+async def get_uploads(
+    hackathon_id: int,
+    request: Request,
+    files_service: IHackathonFilesService = Depends(
+        get_hackathon_files_service
+    ),
+):
+    """
+    Возвращает список вложений хакатона
+    """
+    return await files_service.get_files(
+        hackathon_id,
+        Settings.PUBLIC_API_URL or str(request.base_url).rstrip("/"),
+    )
