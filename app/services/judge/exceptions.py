@@ -9,6 +9,14 @@ class HackathonJudgeDoesNotExistsException(HTTPException):
         )
 
 
+class HackathonJudgeUnauthorizedRoleException(HTTPException):
+    def __init__(self):
+        super().__init__(
+            status_code=400,
+            detail='Членом жюри может являться только пользоваль с ролью "Судья"!',
+        )
+
+
 class HackathonJudgeAlreadyExistsException(HTTPException):
     def __init__(self):
         super().__init__(

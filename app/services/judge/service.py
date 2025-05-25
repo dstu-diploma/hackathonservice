@@ -8,10 +8,12 @@ from app.services.judge.dto import JudgeDto
 import app.util.dto_utils as dto_utils
 from app.events.emitter import Emitter
 from app.events.emitter import Events
+from app.acl.roles import UserRoles
 
 
 from app.services.judge.exceptions import (
     HackathonJudgeCantManageDateExpiredException,
+    HackathonJudgeUnauthorizedRoleException,
     HackathonJudgeAlreadyExistsException,
     HackathonJudgeDoesNotExistsException,
 )
@@ -91,6 +93,9 @@ class JudgeService(IJudgeService):
         user_info = await self.user_service.try_get_user_info(judge_user_id)
         if user_info is None:
             raise UserDoesNotExistException()
+
+        if user_info.role != UserRoles.Judge:
+            raise HackathonJudgeUnauthorizedRoleException()
 
         if await HackathonJudgeModel.get_or_none(
             hackathon_id=hackathon_id, user_id=judge_user_id
