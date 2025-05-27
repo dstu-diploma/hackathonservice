@@ -1,4 +1,16 @@
+from datetime import datetime
 from pydantic import BaseModel
+
+
+class HackathonTeamSubmissionDto(BaseModel):
+    id: int
+    team_id: int
+    hackathon_id: int
+    name: str
+    s3_key: str
+    content_type: str
+    uploaded_at: datetime
+    url: str | None = None
 
 
 class HackathonTeamDto(BaseModel):
@@ -6,7 +18,7 @@ class HackathonTeamDto(BaseModel):
     hackathon_id: int
     name: str
     hackathon_name: str | None = None
-    submission_url: str | None = None
+    submission: HackathonTeamSubmissionDto | None = None
 
 
 class HackathonTeamMateDto(BaseModel):
